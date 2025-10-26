@@ -10,7 +10,6 @@ const PhotoUpload = () => {
     const { biodata, updateBiodata } = useBiodata();
     const [imageSrc, setImageSrc] = useState(null);
     const [crop, setCrop] = useState({ unit: '%', width: 90, aspect: 1 }); // Aspect ratio 1:1 for profile pic
-    const [completedCrop, setCompletedCrop] = useState(null);
     const imgRef = useRef(null);
     const [modalVisible, setModalVisible] = useState(false);
     const [zoom, setZoom] = useState(1);
@@ -28,11 +27,7 @@ const PhotoUpload = () => {
         return false; // Return false to set crop with a new image.
     }, []);
 
-    const makeClientCrop = async (crop) => {
-        if (imgRef.current && crop.width && crop.height) {
-            createCropPreview(imgRef.current, crop, 'newFile.jpeg');
-        }
-    };
+    // makeClientCrop removed (unused). createCropPreview is called directly when needed.
 
     const createCropPreview = async (image, crop, fileName) => {
         const canvas = document.createElement('canvas');
@@ -70,7 +65,14 @@ const PhotoUpload = () => {
         });
     };
 
-    const handleSaveCroppedImage = () => {
+    const handleSaveCroppedImage = async () => {
+        if (imgRef.current && crop && crop.width && crop.height) {
+            try {
+                await createCropPreview(imgRef.current, crop, 'photo.jpg');
+            } catch (err) {
+                console.error('Failed to create crop preview', err);
+            }
+        }
         setModalVisible(false);
     };
 
@@ -99,7 +101,7 @@ const PhotoUpload = () => {
 
             <Modal
                 title="Crop Image"
-                visible={modalVisible}
+                open={modalVisible}
                 onOk={handleSaveCroppedImage}
                 onCancel={() => setModalVisible(false)}
                 width={700}
@@ -122,7 +124,6 @@ const PhotoUpload = () => {
                             onImageLoaded={onImageLoaded}
                             crop={crop}
                             onChange={(c) => setCrop(c)}
-                            onComplete={(c) => setCompletedCrop(c)}
                             crossorigin="anonymous"
                             style={{ maxWidth: '100%', maxHeight: '400px' }}
                             imageStyle={{ transform: `scale(${zoom})` }} // Apply zoom

@@ -1,7 +1,10 @@
 // src/components/Layout/Sidebar.jsx
 import React from 'react';
-import { Card, Select, Radio, Divider, Input, Switch, Button, Tooltip, Upload, message } from 'antd';
-import { UploadOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { Card, Select, Radio, Divider, Input, Switch, Button, Upload, message, Space } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
+import bg1 from '../../assets/bg/bg1.svg';
+import bg2 from '../../assets/bg/bg2.svg';
+import defaultGanesha from '../../assets/icon-images/default-ganesha-icon.png';
 import { useBiodata } from '../../contexts/BiodataContext';
 
 const { Option } = Select;
@@ -156,6 +159,25 @@ const Sidebar = () => {
                         )}
                     </>
                 )}
+            </Card>
+
+            <Card title="Background (PDF)" size="small" style={{ marginTop: 16 }}>
+                <div style={{ marginBottom: 8 }}>Pick background for PDF export / preview:</div>
+                <Space>
+                    {[{src: bg1, name: 'Subtle 1'}, {src: bg2, name: 'Subtle 2'}, {src: defaultGanesha, name: 'Ganesha'}].map(b => (
+                        <div key={b.name} style={{ textAlign: 'center' }}>
+                            <img
+                                src={b.src}
+                                alt={b.name}
+                                style={{ width: 80, height: 120, objectFit: 'cover', cursor: 'pointer', border: biodata.customizations.backgroundImage === b.src ? '2px solid #1890ff' : '1px solid #eee' }}
+                                onClick={() => updateBiodata(draft => { draft.customizations.backgroundImage = b.src; })}
+                            />
+                        </div>
+                    ))}
+                    <div>
+                        <Button onClick={() => updateBiodata(draft => { draft.customizations.backgroundImage = ''; })}>Clear</Button>
+                    </div>
+                </Space>
             </Card>
         </div>
     );

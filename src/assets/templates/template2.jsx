@@ -1,6 +1,6 @@
 // src/assets/templates/template2.jsx
 import React from 'react';
-import { Row, Col, Divider } from 'antd';
+import { Row, Col } from 'antd';
 import './template2.less'; // Template specific styles
 
 const Template2 = ({ biodata }) => {

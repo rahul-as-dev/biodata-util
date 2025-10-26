@@ -1,0 +1,15 @@
+# Development Dockerfile
+# Runs the CRA dev server. Use volumes for a live-reload dev cycle.
+FROM node:18
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+
+COPY package.json package-lock.json* ./
+RUN npm install --legacy-peer-deps --no-audit --no-fund
+
+COPY . .
+EXPOSE 3000
+
+# Use host 0.0.0.0 so container is reachable
+ENV HOST 0.0.0.0
+CMD ["npm", "start"]

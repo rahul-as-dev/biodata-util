@@ -10,6 +10,20 @@ export const generatePdf = async (biodataState) => {
     }
 
     try {
+        // If a backgroundImage is specified in the state, apply it temporarily to the
+        // element so html2canvas captures it as part of the rendering.
+        const bg = biodataState?.customizations?.backgroundImage;
+        const prevBg = input.style.backgroundImage;
+        const prevBgSize = input.style.backgroundSize;
+        const prevBgPos = input.style.backgroundPosition;
+        const prevBgRepeat = input.style.backgroundRepeat;
+        if (bg) {
+            input.style.backgroundImage = `url(${bg})`;
+            input.style.backgroundSize = biodataState.customizations.backgroundSize || 'cover';
+            input.style.backgroundPosition = biodataState.customizations.backgroundPosition || 'center';
+            input.style.backgroundRepeat = 'no-repeat';
+        }
+
         const canvas = await html2canvas(input, {
             scale: 2, // Increase scale for better quality
             useCORS: true, // Important if images are from external URLs
@@ -19,6 +33,14 @@ export const generatePdf = async (biodataState) => {
             windowWidth: input.scrollWidth,
             windowHeight: input.scrollHeight
         });
+
+        // restore previous inline styles
+        if (bg) {
+            input.style.backgroundImage = prevBg;
+            input.style.backgroundSize = prevBgSize;
+            input.style.backgroundPosition = prevBgPos;
+            input.style.backgroundRepeat = prevBgRepeat;
+        }
 
         const imgData = canvas.toDataURL('image/jpeg', 1.0); // High quality JPEG
 

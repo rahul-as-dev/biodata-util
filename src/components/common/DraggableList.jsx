@@ -20,16 +20,9 @@ const wrapperStyle = {
 };
 
 const DraggableList = ({ items = [], onSortEnd = () => {}, renderItem }) => {
-    // Provide an `onChange` handler that receives the new order of item ids
-    const handleChange = (order) => {
-        // `order` is an array of ids (strings). Map back to items preserving order.
-        if (!order) return;
-        const newItems = order.map(id => items.find(it => String(it.id) === String(id))).filter(Boolean);
-        // If the reordered array length differs, fall back to original items
-        if (newItems.length === items.length) {
-            onSortEnd(newItems);
-        }
-    };
+    // Note: ReactSortable mutates the list we pass; we avoid mutating `items` by
+    // passing a shallow copy (`listCopy`) and mapping reordered clones back to
+    // the original `items` when calling `onSortEnd`.
 
     // Pass a shallow-cloned list to ReactSortable so it can safely add internal
     // properties (ReactSortable mutates the provided list items). We map back

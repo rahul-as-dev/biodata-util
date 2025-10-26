@@ -68,6 +68,10 @@ const initialBiodataState = {
         // New customization options
         fontFamily: 'serif',
         primaryColor: '#0056b3', // Example brand color
+        // Background image for PDF/export and preview. Can be a data URL or imported asset URL.
+        backgroundImage: '',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
         // Add more color/font options here
     }
 };

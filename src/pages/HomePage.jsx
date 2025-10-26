@@ -8,9 +8,7 @@ import { useBiodata } from '../contexts/BiodataContext';
 import { generatePdf } from '../utils/PDFGenerator';
 import DraggableList from '../components/common/DraggableList';
 import PhotoUpload from '../components/Forms/PhotoUpload';
-import moment from 'moment'; // For date handling with Ant Design
-
-const { Content } = Layout;
+// moment removed (unused)
 const { TabPane } = Tabs;
 
 // Helper component for editing individual fields
