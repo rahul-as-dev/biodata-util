@@ -1,7 +1,7 @@
 // src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css'; // You might have an index.css or not, if main.less handles everything
+import './assets/styles/main.less'; // Use project's main LESS stylesheet
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 

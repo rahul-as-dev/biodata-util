@@ -1,12 +1,12 @@
 // src/pages/HomePage.jsx
-import React from 'react';
-import { Layout, Row, Col, Card, Tabs, Button, Input, Modal, Form, message } from 'antd';
+import React, { useState } from 'react';
+import { Layout, Row, Col, Card, Tabs, Button, Input, Modal, Form, message, Tooltip } from 'antd';
 import { DownloadOutlined, PlusOutlined, DeleteOutlined, EditOutlined, EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
-import Sidebar from '../components/Layout/Sidebar';
+import Sidebar from '../components/Layouts/Sidebar';
 import BiodataPreview from '../components/BiodataPreview';
 import { useBiodata } from '../contexts/BiodataContext';
-import { generatePdf } from '../utils/pdfGenerator';
-import DraggableList from '../components/Common/DraggableList';
+import { generatePdf } from '../utils/PDFGenerator';
+import DraggableList from '../components/common/DraggableList';
 import PhotoUpload from '../components/Forms/PhotoUpload';
 import moment from 'moment'; // For date handling with Ant Design
 
@@ -51,7 +51,6 @@ const FieldEditor = ({ sectionId, field }) => {
 
     return (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 0', borderBottom: '1px dashed #eee' }}>
-            <span style={{ cursor: 'grab' }}><MenuOutlined /></span>
             <Input
                 style={{ width: '150px' }}
                 value={field.label}
@@ -61,28 +60,31 @@ const FieldEditor = ({ sectionId, field }) => {
             <div style={{ flexGrow: 1 }}>
                 {renderInput()}
             </div>
-            <Button
-                icon={field.enabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                onClick={() => toggleFieldEnabled(sectionId, field.id)}
-                size="small"
-                type={field.enabled ? 'default' : 'dashed'}
-                tooltip={field.enabled ? 'Hide Field' : 'Show Field'}
-            />
-            <Button
-                icon={<DeleteOutlined />}
-                onClick={() => removeField(sectionId, field.id)}
-                danger
-                size="small"
-                tooltip="Remove Field"
-            />
+            <Tooltip title={field.enabled ? 'Hide Field' : 'Show Field'}>
+                <Button
+                    icon={field.enabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                    onClick={() => toggleFieldEnabled(sectionId, field.id)}
+                    size="small"
+                    type={field.enabled ? 'default' : 'dashed'}
+                />
+            </Tooltip>
+            <Tooltip title="Remove Field">
+                <Button
+                    icon={<DeleteOutlined />}
+                    onClick={() => removeField(sectionId, field.id)}
+                    danger
+                    size="small"
+                />
+            </Tooltip>
             {/* Optional: button to toggle label visibility */}
-            <Button
-                icon={field.showLabel ? <EditOutlined /> : <EyeInvisibleOutlined />}
-                onClick={() => toggleFieldShowLabel(sectionId, field.id)}
-                size="small"
-                type={field.showLabel ? 'default' : 'dashed'}
-                tooltip={field.showLabel ? 'Hide Label' : 'Show Label'}
-            />
+            <Tooltip title={field.showLabel ? 'Hide Label' : 'Show Label'}>
+                <Button
+                    icon={field.showLabel ? <EditOutlined /> : <EyeInvisibleOutlined />}
+                    onClick={() => toggleFieldShowLabel(sectionId, field.id)}
+                    size="small"
+                    type={field.showLabel ? 'default' : 'dashed'}
+                />
+            </Tooltip>
         </div>
     );
 };
@@ -113,20 +115,22 @@ const SectionEditor = ({ section }) => {
                         style={{ width: 'calc(100% - 100px)' }}
                     />
                     <div style={{ display: 'flex', gap: '8px' }}>
-                        <Button
-                            icon={section.enabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
-                            onClick={() => toggleSectionEnabled(section.id)}
-                            type={section.enabled ? 'default' : 'dashed'}
-                            size="small"
-                            tooltip={section.enabled ? 'Hide Section' : 'Show Section'}
-                        />
-                        <Button
-                            icon={<DeleteOutlined />}
-                            onClick={() => removeSection(section.id)}
-                            danger
-                            size="small"
-                            tooltip="Remove Section"
-                        />
+                        <Tooltip title={section.enabled ? 'Hide Section' : 'Show Section'}>
+                            <Button
+                                icon={section.enabled ? <EyeOutlined /> : <EyeInvisibleOutlined />}
+                                onClick={() => toggleSectionEnabled(section.id)}
+                                type={section.enabled ? 'default' : 'dashed'}
+                                size="small"
+                            />
+                        </Tooltip>
+                        <Tooltip title="Remove Section">
+                            <Button
+                                icon={<DeleteOutlined />}
+                                onClick={() => removeSection(section.id)}
+                                danger
+                                size="small"
+                            />
+                        </Tooltip>
                     </div>
                 </div>
             }
@@ -239,7 +243,7 @@ const HomePage = () => {
 
             <Modal
                 title="Add New Section"
-                visible={isAddSectionModalVisible}
+                open={isAddSectionModalVisible}
                 onOk={handleAddSection}
                 onCancel={() => setIsAddSectionModalVisible(false)}
                 okText="Add Section"
