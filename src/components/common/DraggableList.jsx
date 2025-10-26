@@ -1,6 +1,6 @@
 // src/components/common/DraggableList.jsx
 import React from 'react';
-import Sortable from 'react-sortablejs';
+import { ReactSortable } from 'react-sortablejs';
 import { MenuOutlined } from '@ant-design/icons';
 
 // A lightweight draggable list using react-sortablejs (wrapper around sortablejs).
@@ -31,11 +31,24 @@ const DraggableList = ({ items = [], onSortEnd = () => {}, renderItem }) => {
         }
     };
 
+    // Pass a shallow-cloned list to ReactSortable so it can safely add internal
+    // properties (ReactSortable mutates the provided list items). We map back
+    // to the original `items` when reporting order changes via `onSortEnd`.
+    const listCopy = items.map(it => ({ ...it }));
+
     return (
-        <Sortable
+        <ReactSortable
+            list={listCopy}
+            setList={(newList) => {
+                // newList contains shallow-cloned item objects with the same `id`.
+                const ordered = newList.map(n => {
+                    const nid = n && (n.id ?? n);
+                    return items.find(it => String(it.id) === String(nid));
+                }).filter(Boolean);
+                if (ordered.length === items.length) onSortEnd(ordered);
+            }}
             tag="div"
             options={{ handle: '.drag-handle' }}
-            onChange={handleChange}
         >
             {items.map(item => (
                 <div key={item.id} data-id={item.id} style={wrapperStyle}>
@@ -45,7 +58,7 @@ const DraggableList = ({ items = [], onSortEnd = () => {}, renderItem }) => {
                     <div style={{ flex: 1 }}>{renderItem(item)}</div>
                 </div>
             ))}
-        </Sortable>
+        </ReactSortable>
     );
 };
 
