@@ -64,7 +64,11 @@ const initialBiodataState = {
     customizations: {
         alignment: 'left',
         headerPlacement: 'top',
-        imagePlacement: 'center',
+        // imagePlacement: 'above' places the image just above the Personal Details
+        // section; 'right' places it to the right of the Personal Details section.
+        imagePlacement: 'right',
+        // imageShape controls whether profile photo is circular or rectangular
+        imageShape: 'circle',
         // New customization options
         fontFamily: 'serif',
         primaryColor: '#0056b3', // Example brand color

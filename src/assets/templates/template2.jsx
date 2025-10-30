@@ -36,6 +36,22 @@ const Template2 = ({ biodata }) => {
         marginRight: '10px',
     };
 
+    const isCircle = customizations.imageShape === 'circle';
+    const photoWrapperStyle = {
+        display: 'inline-block',
+        padding: '3px',
+        background: customizations.primaryColor,
+        borderRadius: isCircle ? '50%' : '8px',
+    };
+    const photoStyle = {
+        width: isCircle ? '120px' : '110px',
+        height: isCircle ? '120px' : '150px',
+        objectFit: 'cover',
+        borderRadius: isCircle ? '50%' : '6px',
+        marginBottom: '12px',
+        display: 'block',
+    };
+
     return (
         <div className="biodata-template2-container" style={{
             padding: '30px',
@@ -49,88 +65,75 @@ const Template2 = ({ biodata }) => {
                 </div>
             )}
 
-            <Row gutter={24} style={{ marginTop: '20px' }}>
-                {photo && customizations.imagePlacement === 'left' && (
-                    <Col span={6} style={{ textAlign: 'center' }}>
-                        <img
-                            src={photo}
-                            alt="Profile"
-                            style={{
-                                width: '120px',
-                                height: '120px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: `2px solid ${customizations.primaryColor}`,
-                                padding: '3px',
-                                marginBottom: '20px',
-                            }}
-                        />
-                    </Col>
-                )}
-                <Col span={photo && (customizations.imagePlacement === 'left' || customizations.imagePlacement === 'right') ? 18 : 24}>
-                    {sections.filter(s => s.enabled).map(section => (
-                        <div key={section.id} className="biodata-section-t2" style={{ marginBottom: '25px' }}>
-                            <div style={sectionTitleStyle}>
-                                {section.title}
+            {sections.filter(s => s.enabled).map(section => {
+                if (section.id === 'personal') {
+                    // Place the photo above or to the right of the personal section
+                    if (customizations.imagePlacement === 'above' && photo) {
+                        return (
+                            <div key={section.id} style={{ marginTop: '20px', marginBottom: '25px' }}>
+                                <div style={{ textAlign: 'center' }}>
+                                    <div style={photoWrapperStyle}>
+                                        <img src={photo} alt="Profile" style={photoStyle} />
+                                    </div>
+                                </div>
+                                <div className="biodata-section-t2" style={{ marginTop: '10px' }}>
+                                    <div style={sectionTitleStyle}>{section.title}</div>
+                                    <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                                        {section.fields.filter(f => f.enabled).map(field => (
+                                            <React.Fragment key={field.id}>
+                                                {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                                <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
+                                            </React.Fragment>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="biodata-fields-t2" style={{
-                                display: 'grid',
-                                gridTemplateColumns: '150px 1fr',
-                                gap: '5px 15px',
-                                textAlign: 'left',
-                                // Conditionally render based on field.showLabel
-                            }}>
-                                {section.fields.filter(f => f.enabled).map(field => (
-                                    <React.Fragment key={field.id}>
-                                        {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
-                                        <div className
-                                            Name="field-value-t2"
-                                            style={{
-                                                gridColumn: field.showLabel ? '2 / 3' : '1 / -1', // If no label, span full width
-                                            }}
-                                        >
-                                            {renderFieldValue(field.value, field.type)}
+                        );
+                    }
+
+                    if (customizations.imagePlacement === 'right' && photo) {
+                        return (
+                            <div key={section.id} style={{ marginTop: '20px', marginBottom: '25px' }}>
+                                <Row gutter={24}>
+                                    <Col span={18}>
+                                        <div className="biodata-section-t2">
+                                            <div style={sectionTitleStyle}>{section.title}</div>
+                                            <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                                                {section.fields.filter(f => f.enabled).map(field => (
+                                                    <React.Fragment key={field.id}>
+                                                        {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                                        <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
+                                                    </React.Fragment>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </React.Fragment>
-                                ))}
+                                    </Col>
+                                    <Col span={6} style={{ textAlign: 'center' }}>
+                                        <div style={photoWrapperStyle}>
+                                            <img src={photo} alt="Profile" style={photoStyle} />
+                                        </div>
+                                    </Col>
+                                </Row>
                             </div>
+                        );
+                    }
+                }
+
+                // Default section rendering
+                return (
+                    <div key={section.id} className="biodata-section-t2" style={{ marginBottom: '25px' }}>
+                        <div style={sectionTitleStyle}>{section.title}</div>
+                        <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                            {section.fields.filter(f => f.enabled).map(field => (
+                                <React.Fragment key={field.id}>
+                                    {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                    <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
+                                </React.Fragment>
+                            ))}
                         </div>
-                    ))}
-                </Col>
-                {photo && customizations.imagePlacement === 'right' && (
-                    <Col span={6} style={{ textAlign: 'center' }}>
-                        <img
-                            src={photo}
-                            alt="Profile"
-                            style={{
-                                width: '120px',
-                                height: '120px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: `2px solid ${customizations.primaryColor}`,
-                                padding: '3px',
-                                marginBottom: '20px',
-                            }}
-                        />
-                    </Col>
-                )}
-            </Row>
-            {photo && customizations.imagePlacement === 'center' && (
-                <div style={{ textAlign: 'center', marginTop: '20px' }}>
-                    <img
-                        src={photo}
-                        alt="Profile"
-                        style={{
-                            width: '120px',
-                            height: '120px',
-                            objectFit: 'cover',
-                            borderRadius: '8px',
-                            border: `2px solid ${customizations.primaryColor}`,
-                            padding: '3px',
-                        }}
-                    />
-                </div>
-            )}
+                    </div>
+                );
+            })}
         </div>
     );
 };

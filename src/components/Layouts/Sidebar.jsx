@@ -89,14 +89,13 @@ const Sidebar = () => {
                     <Radio.Button value="right">Right</Radio.Button>
                 </Radio.Group>
 
-                <Divider orientation="left" style={{ marginTop: 24 }}>Image Placement</Divider>
+                <Divider orientation="left" style={{ marginTop: 24 }}>Image Placement (Personal Details)</Divider>
                 <Radio.Group
                     onChange={handleImagePlacementChange}
                     value={biodata.customizations.imagePlacement}
                     buttonStyle="solid"
                 >
-                    <Radio.Button value="left">Left</Radio.Button>
-                    <Radio.Button value="center">Center</Radio.Button>
+                    <Radio.Button value="above">Above</Radio.Button>
                     <Radio.Button value="right">Right</Radio.Button>
                 </Radio.Group>
 

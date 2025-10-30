@@ -32,18 +32,24 @@ const Template1 = ({ biodata }) => {
     };
 
     // Apply photo wrapper styles based on customizations
+    const isCircle = customizations.imageShape === 'circle';
     const photoWrapperStyle = {
-        textAlign: customizations.imagePlacement,
-        marginBottom: '20px',
+        textAlign: 'center',
+        marginBottom: '12px',
+        display: 'inline-block',
+        padding: '3px',
+        background: customizations.primaryColor,
+        // wrapper borderRadius should match outer shape
+        borderRadius: isCircle ? '50%' : '8px',
     };
 
     const photoStyle = {
-        width: '150px',
-        height: '150px',
+        width: isCircle ? '150px' : '120px',
+        height: isCircle ? '150px' : '160px',
         objectFit: 'cover',
-        borderRadius: '50%', // Classic circular photo
-        border: `3px solid ${customizations.primaryColor}`,
-        padding: '3px',
+        borderRadius: isCircle ? '50%' : '6px',
+        display: 'block',
+        // remove border/padding from the img itself; wrapper provides the colored ring
     };
 
     // Style for section dividers
@@ -77,46 +83,108 @@ const Template1 = ({ biodata }) => {
                 </div>
             )}
 
-            {/* Photo */}
-            {photo && (
-                <div className="biodata-photo-wrapper" style={photoWrapperStyle}>
-                    <img src={photo} alt="Profile" style={photoStyle} />
-                </div>
-            )}
-
             {/* Sections */}
-            {sections.filter(s => s.enabled).map(section => (
-                <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
-                    <Divider orientation="left">
-                        <span style={sectionDividerStyle}>{section.title}</span>
-                    </Divider>
-                    <div className="biodata-fields" style={{
-                        display: 'grid',
-                        // If center/right alignment, labels might still be left-aligned with values
-                        gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
-                        gap: '5px 15px',
-                        textAlign: 'left', // Keep field labels/values left aligned usually
-                        marginLeft: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'right' ? 'auto' : '0'),
-                        marginRight: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'left' ? 'auto' : '0'),
-                        maxWidth: '80%', // Limit width for centered sections
-                    }}>
-                        {section.fields.filter(f => f.enabled).map(field => (
-                            <React.Fragment key={field.id}>
-                                {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
-                                <div
-                                    className="field-value"
-                                    style={{
-                                        gridColumn: field.showLabel ? '2 / 3' : '1 / -1', // If no label, span full width
-                                        // Adjust value alignment if needed
-                                    }}
-                                >
-                                    {renderFieldValue(field.value, field.type)}
+            {sections.filter(s => s.enabled).map(section => {
+                // If this is the Personal Details section, place the photo above or to the right
+                if (section.id === 'personal') {
+                    if (customizations.imagePlacement === 'above' && photo) {
+                        return (
+                            <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
+                                <div className="biodata-photo-wrapper" style={photoWrapperStyle}>
+                                    <img src={photo} alt="Profile" style={photoStyle} />
                                 </div>
-                            </React.Fragment>
-                        ))}
+                                <Divider orientation="left">
+                                    <span style={sectionDividerStyle}>{section.title}</span>
+                                </Divider>
+                                <div className="biodata-fields" style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                                    gap: '5px 15px',
+                                    textAlign: 'left',
+                                    maxWidth: '80%',
+                                }}>
+                                    {section.fields.filter(f => f.enabled).map(field => (
+                                        <React.Fragment key={field.id}>
+                                            {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                            <div className="field-value" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>
+                                                {renderFieldValue(field.value, field.type)}
+                                            </div>
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    }
+
+                    if (customizations.imagePlacement === 'right' && photo) {
+                        return (
+                            <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
+                                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
+                                    <div style={{ flex: 1 }}>
+                                        <Divider orientation="left">
+                                            <span style={sectionDividerStyle}>{section.title}</span>
+                                        </Divider>
+                                        <div className="biodata-fields" style={{
+                                            display: 'grid',
+                                            gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                                            gap: '5px 15px',
+                                            textAlign: 'left',
+                                        }}>
+                                            {section.fields.filter(f => f.enabled).map(field => (
+                                                <React.Fragment key={field.id}>
+                                                    {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                                    <div className="field-value" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>
+                                                        {renderFieldValue(field.value, field.type)}
+                                                    </div>
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div style={{ width: isCircle ? 170 : 140, textAlign: 'center' }}>
+                                        <div style={photoWrapperStyle}>
+                                            <img src={photo} alt="Profile" style={photoStyle} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                    }
+                }
+
+                // Default rendering for other sections and cases where no photo
+                return (
+                    <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
+                        <Divider orientation="left">
+                            <span style={sectionDividerStyle}>{section.title}</span>
+                        </Divider>
+                        <div className="biodata-fields" style={{
+                            display: 'grid',
+                            // If center/right alignment, labels might still be left-aligned with values
+                            gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                            gap: '5px 15px',
+                            textAlign: 'left', // Keep field labels/values left aligned usually
+                            marginLeft: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'right' ? 'auto' : '0'),
+                            marginRight: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'left' ? 'auto' : '0'),
+                            maxWidth: '80%', // Limit width for centered sections
+                        }}>
+                            {section.fields.filter(f => f.enabled).map(field => (
+                                <React.Fragment key={field.id}>
+                                    {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                    <div
+                                        className="field-value"
+                                        style={{
+                                            gridColumn: field.showLabel ? '2 / 3' : '1 / -1', // If no label, span full width
+                                            // Adjust value alignment if needed
+                                        }}
+                                    >
+                                        {renderFieldValue(field.value, field.type)}
+                                    </div>
+                                </React.Fragment>
+                            ))}
+                        </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 };
