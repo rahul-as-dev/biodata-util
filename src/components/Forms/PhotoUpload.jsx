@@ -1,314 +1,278 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Upload, Button, Modal, Slider, Radio, Space, message } from 'antd';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Upload, Button, Space, Radio, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import { useBiodata } from '../../contexts/BiodataContext';
 import ReactCrop from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { useBiodata } from '../../contexts/BiodataContext';
-
-const { Dragger } = Upload;
 
 const PhotoUpload = () => {
-    const { biodata, updateBiodata } = useBiodata();
-    const [imageSrc, setImageSrc] = useState(null);
-    // crop state for react-image-crop (percentage-based for display)
-    const [crop, setCrop] = useState(); // Start as undefined to let ReactCrop initialize
-    const imgRef = useRef(null); // Reference to the actual <img> element for natural dimensions
-    const [modalVisible, setModalVisible] = useState(false);
-    const [scale, setScale] = useState(1); // Renamed from zoom to scale for clarity with ReactCrop
-    // This state holds the final crop values (pixel-based) that we'll use for saving.
-    const [completedCrop, setCompletedCrop] = useState(null);
+  const { biodata, updateBiodata } = useBiodata();
 
-    // Determine aspect ratio based on selected shape
-    const selectedShape = biodata.customizations?.imageShape || 'circle';
-    const cropAspect = selectedShape === 'circle' ? 1 : undefined;
+  const [imgSrc, setImgSrc] = useState('');
+  const imgRef = useRef(null);
+  const previewCanvasRef = useRef(null);
 
-    // Reset crop, scale, and imageSrc when modal opens for a new image or closes
-    useEffect(() => {
-        if (!modalVisible) {
-            setImageSrc(null);
-            setScale(1);
-            setCompletedCrop(null);
-            setCrop(undefined); // Reset crop to undefined to re-initialize ReactCrop
-        }
-    }, [modalVisible]);
+  const initialAspect = biodata?.customizations?.imageShape === 'circle' ? 1 : undefined;
+  const [crop, setCrop] = useState(
+    initialAspect ? { unit: '%', width: 50, aspect: initialAspect } : { unit: '%', width: 60 }
+  );
+  const [completedCrop, setCompletedCrop] = useState(null);
 
-    const onSelectFile = (file) => {
-        const actualFile = file.file || file;
-        const reader = new FileReader();
-        reader.addEventListener('load', () => {
-            setImageSrc(reader.result);
-            setModalVisible(true);
-        });
-        reader.readAsDataURL(actualFile);
-        return false; // Prevent AntD from uploading
-    };
+  const { Dragger } = Upload;
 
-    // Callback when the image inside ReactCrop loads.
-    const onImageLoaded = useCallback((img) => {
-        imgRef.current = img; // Store reference to the actual image element
-        // When image is loaded, set the initial crop to cover the image
-        const { naturalWidth, naturalHeight } = img;
-        let initialCrop;
+  // Accept either a File (from antd) or an input event (if you later switch to <input/>)
+  const onSelectFile = (fileOrEvent) => {
+    let file;
+    if (fileOrEvent && fileOrEvent.target && fileOrEvent.target.files) {
+      file = fileOrEvent.target.files[0];
+    } else {
+      // antd's beforeUpload gives a File directly
+      file = fileOrEvent;
+    }
+    if (!file) return false;
 
-        if (cropAspect === 1) {
-            // Center a square crop using pixel units relative to natural image
-            const minDim = Math.min(naturalWidth, naturalHeight);
-            const x = (naturalWidth - minDim) / 2;
-            const y = (naturalHeight - minDim) / 2;
-            initialCrop = { unit: 'px', x, y, width: minDim, height: minDim, aspect: 1 };
-        } else {
-            // Default to full image for rectangle
-            initialCrop = { unit: 'px', x: 0, y: 0, width: naturalWidth, height: naturalHeight };
-        }
-        // ReactCrop expects percentage units for its `crop` prop for dynamic resizing with container.
-        // Convert initial pixel crop to percentage relative to natural image size for ReactCrop.
-        const percentageCrop = {
-            unit: '%',
-            x: (initialCrop.x / naturalWidth) * 100,
-            y: (initialCrop.y / naturalHeight) * 100,
-            width: (initialCrop.width / naturalWidth) * 100,
-            height: (initialCrop.height / naturalHeight) * 100,
-            aspect: cropAspect
-        };
-        setCrop(percentageCrop);
-        // Also set completedCrop in displayed pixels (what ReactCrop reports in onComplete)
-        // so we keep the same units that ReactCrop provides during interactions.
-        const displayScaleX = img.width / naturalWidth || 1;
-        const displayScaleY = img.height / naturalHeight || 1;
-        setCompletedCrop({
-            x: Math.round(initialCrop.x * displayScaleX),
-            y: Math.round(initialCrop.y * displayScaleY),
-            width: Math.round(initialCrop.width * displayScaleX),
-            height: Math.round(initialCrop.height * displayScaleY),
-            aspect: cropAspect
-        });
-        return false; // Keep crop state
-    }, [cropAspect]);
+    const reader = new FileReader();
+    reader.addEventListener('load', () => {
+      setImgSrc(reader.result || '');
+      setCrop(initialAspect ? { unit: '%', width: 50, aspect: initialAspect } : { unit: '%', width: 60 });
+      setCompletedCrop(null);
+    });
+    reader.readAsDataURL(file);
 
-    // This is called when the user drags the crop area or on initial mount
-    const onCropChange = useCallback((newCrop) => {
-        setCrop(newCrop);
-    }, []);
+    // prevent antd from uploading the file to any server
+    return false;
+  };
 
-    // This is called when the user finishes dragging the crop area
-    const onCropComplete = useCallback((completedPercentageCrop, completedPixelCrop) => {
-        // Store the pixel crop reported by ReactCrop (pixels relative to displayed image size)
-        setCompletedCrop(completedPixelCrop);
-    }, []);
+  const onImageLoad = useCallback(() => {
+    // no-op but kept in case we want to auto-adjust crop to image on load
+  }, []);
 
-    // Create cropped image preview logic
-    const createCropPreview = async (image, completedCropObj, shape = 'circle') => {
-        if (!completedCropObj || !image) {
-            throw new Error('No crop selected or image not loaded.');
-        }
+  // Draw the completed crop into the preview canvas
+  useEffect(() => {
+    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) return;
 
-        // ReactCrop provides pixel crop values relative to the displayed image size.
-        // Convert those to natural image pixels for accurate canvas drawing.
-        const displayW = image.width;
-        const displayH = image.height;
-        const naturalW = image.naturalWidth;
-        const naturalH = image.naturalHeight;
+    const image = imgRef.current;
+    const canvas = previewCanvasRef.current;
+    const cropObj = completedCrop;
 
-        if (!displayW || !displayH || !naturalW || !naturalH) {
-            throw new Error('Image dimensions not available yet');
-        }
+    // guard: ensure numerical values
+    const cropWidth = Number(cropObj.width || 0);
+    const cropHeight = Number(cropObj.height || 0);
+    const cropX = Number(cropObj.x || 0);
+    const cropY = Number(cropObj.y || 0);
 
-        const scaleX = naturalW / displayW;
-        const scaleY = naturalH / displayH;
+    if (cropWidth <= 0 || cropHeight <= 0) {
+      // nothing to draw
+      return;
+    }
 
-        const sx = Math.max(0, Math.round((completedCropObj.x || 0) * scaleX));
-        const sy = Math.max(0, Math.round((completedCropObj.y || 0) * scaleY));
-        let sWidth = Math.round((completedCropObj.width || 0) * scaleX);
-        let sHeight = Math.round((completedCropObj.height || 0) * scaleY);
+    // scale from displayed image to natural image
+    const displayedWidth = image.width || image.offsetWidth || 1;
+    const displayedHeight = image.height || image.offsetHeight || 1;
+    const scaleX = image.naturalWidth / displayedWidth;
+    const scaleY = image.naturalHeight / displayedHeight;
 
-        // Clamp
-        if (sx + sWidth > naturalW) sWidth = naturalW - sx;
-        if (sy + sHeight > naturalH) sHeight = naturalH - sy;
-        if (sWidth <= 0 || sHeight <= 0) throw new Error('Invalid crop size');
+    const pixelRatio = window.devicePixelRatio || 1;
 
-        const canvas = document.createElement('canvas');
-        canvas.width = sWidth;
-        canvas.height = sHeight;
-        const ctx = canvas.getContext('2d');
+    // Set canvas size (in CSS pixels)
+    canvas.width = Math.round(cropWidth * pixelRatio);
+    canvas.height = Math.round(cropHeight * pixelRatio);
+    canvas.style.width = `${cropWidth}px`;
+    canvas.style.height = `${cropHeight}px`;
 
-        if (shape === 'circle') {
-            ctx.beginPath();
-            const cx = sWidth / 2;
-            const cy = sHeight / 2;
-            const r = Math.min(sWidth, sHeight) / 2;
-            ctx.arc(cx, cy, r, 0, Math.PI * 2, true);
-            ctx.closePath();
-            ctx.clip();
-        }
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-        ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.clearRect(0, 0, cropWidth, cropHeight);
 
-        return new Promise((resolve, reject) => {
-            const type = shape === 'circle' ? 'image/png' : 'image/jpeg';
-            canvas.toBlob((blob) => {
-                if (!blob) return reject(new Error('Canvas is empty'));
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(blob);
-            }, type, 0.95);
-        });
-    };
+    const sx = Math.round(cropX * scaleX);
+    const sy = Math.round(cropY * scaleY);
+    const sWidth = Math.round(cropWidth * scaleX);
+    const sHeight = Math.round(cropHeight * scaleY);
 
-    const handleSaveCroppedImage = async () => {
-        // imgRef.current should be the actual <img> element inside ReactCrop
-        if (!imgRef.current || !completedCrop || completedCrop.width === 0 || completedCrop.height === 0) {
-            message.error("Please select a valid crop area first.");
-            return;
-        }
-        try {
-            const shape = biodata.customizations?.imageShape || 'circle';
-            const base64 = await createCropPreview(imgRef.current, completedCrop, shape);
-            updateBiodata(draft => { draft.photo = base64; });
-            message.success("Photo uploaded successfully!");
-        } catch (err) {
-            console.error('Failed to create crop preview', err);
-            message.error("Failed to crop image. Please try again.");
-        }
-        setModalVisible(false); // This will trigger the useEffect cleanup
-    };
+    try {
+      ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, cropWidth, cropHeight);
+    } catch (err) {
+      // defensive: in rare cases drawImage can throw if sizes are invalid
+      // console.error('drawImage failed', err);
+    }
+  }, [completedCrop]);
 
-    const handleRemovePhoto = () => {
-        updateBiodata(draft => { draft.photo = null; });
-        message.info("Photo removed.");
-    };
+  const handleSaveCroppedImage = async () => {
+    if (!completedCrop || !previewCanvasRef.current) {
+      message.error('Please select a crop before saving.');
+      return;
+    }
 
-    const handleShapeChange = (e) => {
-        const newShape = e.target.value;
-        updateBiodata(draft => {
-            if (!draft.customizations) draft.customizations = {};
-            draft.customizations.imageShape = newShape;
-        });
+    const canvas = previewCanvasRef.current;
 
-        // Adjust crop aspect ratio instantly
-        setCrop(currentCrop => {
-            const newAspect = newShape === 'circle' ? 1 : undefined;
-            if (currentCrop) {
-                return {
-                    ...currentCrop,
-                    aspect: newAspect
-                };
-            }
-            // If there's no current crop (e.g., first time loading or image not yet loaded),
-            // set a default 100% crop with the new aspect.
-            return { unit: '%', x: 0, y: 0, width: 100, height: 100, aspect: newAspect };
-        });
-    };
+    // Export as JPEG (change to 'image/png' if you prefer)
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
 
-    const handlePlacementChange = (e) => {
-        updateBiodata(draft => {
-            if (!draft.customizations) draft.customizations = {};
-            draft.customizations.imagePlacement = e.target.value;
-        });
-    };
+    updateBiodata((draft) => {
+      draft.photo = dataUrl;
+    });
 
-    return (
-        <div>
-            <div style={{ marginBottom: 12 }}>
-                <div style={{ marginBottom: 8 }}>
-                    <strong>Shape:</strong>
-                    <Radio.Group onChange={handleShapeChange} value={selectedShape} style={{ marginLeft: 12 }}>
-                        <Radio.Button value="circle">Circle</Radio.Button>
-                        <Radio.Button value="rect">Rectangle</Radio.Button>
-                    </Radio.Group>
-                </div>
-                <div style={{ marginBottom: 8 }}>
-                    <strong>Placement (Personal Details):</strong>
-                    <Radio.Group onChange={handlePlacementChange} value={biodata.customizations?.imagePlacement || 'above'} style={{ marginLeft: 12 }}>
-                        <Radio.Button value="above">Above</Radio.Button>
-                        <Radio.Button value="right">Right</Radio.Button>
-                    </Radio.Group>
-                </div>
-            </div>
+    message.success('Photo saved.');
+    // clear the temporary UI
+    setImgSrc('');
+    setCrop(null);
+    setCompletedCrop(null);
+  };
 
-            {biodata.photo ? (
-                (() => {
-                    const isCircle = biodata.customizations?.imageShape === 'circle';
-                    return (
-                        <div style={{ marginBottom: 16 }}>
-                            <div style={{ display: 'inline-block', padding: '3px', background: biodata.customizations?.primaryColor || '#1890ff', borderRadius: isCircle ? '50%' : '8px' }}>
-                                <img
-                                    src={biodata.photo}
-                                    alt="Profile Preview"
-                                    style={{
-                                        width: '150px',
-                                        height: '150px',
-                                        objectFit: 'cover',
-                                        borderRadius: isCircle ? '50%' : '6px',
-                                        display: 'block'
-                                    }}
-                                />
-                            </div>
-                            <Button onClick={handleRemovePhoto} danger style={{ marginLeft: 16 }}>Remove Photo</Button>
-                        </div>
-                    );
-                })()
-            ) : (
-                <Dragger accept="image/*" showUploadList={false} beforeUpload={onSelectFile} style={{ marginBottom: 12 }}>
-                    <Space direction="vertical" align="center" style={{ width: '100%' }}>
-                        <UploadOutlined style={{ fontSize: 24 }} />
-                        <div>Click or drag image here to upload</div>
-                    </Space>
-                </Dragger>
-            )}
+  const handlePlacementChange = (e) => {
+    updateBiodata((draft) => {
+      if (!draft.customizations) draft.customizations = {};
+      draft.customizations.imagePlacement = e.target.value;
+    });
+  };
 
-            <Modal
-                title="Crop Image"
-                open={modalVisible}
-                onOk={handleSaveCroppedImage}
-                onCancel={() => {
-                    setModalVisible(false); // This will trigger the useEffect cleanup
-                }}
-                width={800}
-                okButtonProps={{ disabled: !imgRef.current || !completedCrop }}
-                destroyOnClose={true}
-            >
-                {imageSrc && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                            <div style={{ flex: 1 }}>
-                                <label style={{ marginRight: 10 }}>Scale (Zoom)</label>
-                                <Slider min={1} max={3} step={0.01} value={scale} onChange={setScale} />
-                            </div>
-                        </div>
+  const handleShapeChange = (e) => {
+    const newShape = e.target.value;
+    updateBiodata((draft) => {
+      if (!draft.customizations) draft.customizations = {};
+      draft.customizations.imageShape = newShape;
+    });
 
-                        <div style={{ position: 'relative', width: '100%', height: 500, background: '#f6f6f6', display: 'flex', justifyContent: 'center', alignItems: 'center', overflow: 'hidden' }}>
-                            <ReactCrop
-                                crop={crop}
-                                onChange={onCropChange}
-                                onComplete={onCropComplete}
-                                aspect={cropAspect}
-                                keepSelection={false}
-                                ruleOfThirds
-                                style={{ maxHeight: '100%', maxWidth: '100%' }}
-                            >
-                                <img
-                                    ref={imgRef}
-                                    alt="Crop me"
-                                    src={imageSrc}
-                                    onLoad={onImageLoaded}
-                                    style={{
-                                        // Use width percentage relative to container to implement zoom.
-                                        // This lets ReactCrop measure the displayed image size correctly
-                                        // so crop handles remain interactive and coordinates map properly.
-                                        width: `${scale * 100}%`,
-                                        height: 'auto',
-                                        display: 'block',
-                                        maxWidth: 'none',
-                                    }}
-                                />
-                            </ReactCrop>
-                        </div>
-                    </div>
-                )}
-            </Modal>
-        </div>
+    // adjust crop aspect when shape changes
+    setCrop((prev) =>
+      newShape === 'circle' ? { unit: '%', width: 50, aspect: 1 } : { unit: '%', width: 60 }
     );
+  };
+
+  const handleRemovePhoto = () => {
+    updateBiodata((draft) => {
+      draft.photo = null;
+    });
+    message.info('Photo removed.');
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ marginBottom: 8 }}>
+          <strong>Shape:</strong>
+          <Radio.Group
+            onChange={handleShapeChange}
+            value={biodata?.customizations?.imageShape || 'circle'}
+            style={{ marginLeft: 12 }}
+          >
+            <Radio.Button value="circle">Circle</Radio.Button>
+            <Radio.Button value="rect">Rectangle</Radio.Button>
+          </Radio.Group>
+        </div>
+
+        <div style={{ marginBottom: 8 }}>
+          <strong>Placement (Personal Details):</strong>
+          <Radio.Group
+            onChange={handlePlacementChange}
+            value={biodata?.customizations?.imagePlacement || 'above'}
+            style={{ marginLeft: 12 }}
+          >
+            <Radio.Button value="above">Above</Radio.Button>
+            <Radio.Button value="right">Right</Radio.Button>
+          </Radio.Group>
+        </div>
+      </div>
+
+      {biodata?.photo ? (
+        (() => {
+          const isCircle = biodata?.customizations?.imageShape === 'circle';
+          return (
+            <div style={{ marginBottom: 16 }}>
+              <div
+                style={{
+                  display: 'inline-block',
+                  padding: '3px',
+                  background: biodata?.customizations?.primaryColor || '#1890ff',
+                  borderRadius: isCircle ? '50%' : '8px',
+                }}
+              >
+                <img
+                  src={biodata.photo}
+                  alt="Profile Preview"
+                  style={{
+                    width: '150px',
+                    height: '150px',
+                    objectFit: 'cover',
+                    borderRadius: isCircle ? '50%' : '6px',
+                    display: 'block',
+                  }}
+                />
+              </div>
+              <Button onClick={handleRemovePhoto} danger style={{ marginLeft: 16 }}>
+                Remove Photo
+              </Button>
+            </div>
+          );
+        })()
+      ) : (
+        <Dragger
+          accept="image/*"
+          showUploadList={false}
+          // beforeUpload receives the file; return false to prevent upload
+          beforeUpload={(file) => onSelectFile(file)}
+          style={{ marginBottom: 12 }}
+        >
+          <Space direction="vertical" align="center" style={{ width: '100%' }}>
+            <UploadOutlined style={{ fontSize: 24 }} />
+            <div>Click or drag image here to upload</div>
+          </Space>
+        </Dragger>
+      )}
+
+      {!!imgSrc && (
+        <div>
+          <ReactCrop
+            crop={crop ?? undefined}
+            onChange={(newCrop, percentCrop) => setCrop(percentCrop || newCrop)}
+            onComplete={(c) => setCompletedCrop(c)}
+            ruleOfThirds
+            circularCrop={biodata?.customizations?.imageShape === 'circle'}
+          >
+            <img
+              ref={imgRef}
+              alt="To be cropped"
+              src={imgSrc}
+              onLoad={onImageLoad}
+              style={{ maxWidth: '100%', maxHeight: 480 }}
+            />
+          </ReactCrop>
+
+          <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <Button type="primary" onClick={handleSaveCroppedImage} disabled={!completedCrop}>
+              Save Cropped Photo
+            </Button>
+
+            <Button
+              onClick={() => {
+                setImgSrc('');
+                setCrop(null);
+                setCompletedCrop(null);
+              }}
+            >
+              Cancel
+            </Button>
+
+            <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
+              <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Preview</div>
+              <canvas
+                ref={previewCanvasRef}
+                style={{
+                  maxWidth: 120,
+                  maxHeight: 120,
+                  borderRadius: biodata?.customizations?.imageShape === 'circle' ? '50%' : 6,
+                  boxShadow: '0 0 0 2px rgba(0,0,0,0.05)',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default PhotoUpload;
