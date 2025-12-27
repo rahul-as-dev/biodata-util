@@ -1,7 +1,5 @@
 // src/assets/templates/template1.jsx
 import React from 'react';
-import { Divider } from 'antd';
-import './template1.less'; // Template specific styles
 
 const Template1 = ({ biodata }) => {
     const { header, photo, sections, customizations } = biodata;
@@ -13,6 +11,16 @@ const Template1 = ({ biodata }) => {
         }
         return value;
     };
+
+    // Custom divider component to replace Ant Design's Divider
+    const SectionDivider = ({ title, color }) => (
+        <div className="flex items-center gap-3 my-4">
+            <span className="font-bold text-lg uppercase" style={{ color }}>
+                {title}
+            </span>
+            <div className="flex-1" style={{ borderBottomColor: color, borderBottomWidth: '1px' }}></div>
+        </div>
+    );
 
     // Apply header styles based on customizations
     const headerWrapperStyle = {
@@ -89,23 +97,18 @@ const Template1 = ({ biodata }) => {
                 if (section.id === 'personal') {
                     if (customizations.imagePlacement === 'above' && photo) {
                         return (
-                            <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
-                                <div className="biodata-photo-wrapper" style={photoWrapperStyle}>
+                            <div key={section.id} className="biodata-section mb-6">
+                                <div className="biodata-photo-wrapper inline-block p-1 mb-3" style={{ background: customizations.primaryColor, borderRadius: isCircle ? '50%' : '8px' }}>
                                     <img src={photo} alt="Profile" style={photoStyle} />
                                 </div>
-                                <Divider orientation="left">
-                                    <span style={sectionDividerStyle}>{section.title}</span>
-                                </Divider>
-                                <div className="biodata-fields" style={{
-                                    display: 'grid',
-                                    gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
-                                    gap: '5px 15px',
-                                    textAlign: 'left',
-                                    maxWidth: '80%',
-                                }}>
+                                <SectionDivider title={section.title} color={customizations.primaryColor} />
+                                <div className="biodata-fields grid gap-y-1 gap-x-4 text-left max-w-4xl"
+                                     style={{
+                                         gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                                     }}>
                                     {section.fields.filter(f => f.enabled).map(field => (
                                         <React.Fragment key={field.id}>
-                                            {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                            {field.showLabel && <div className="field-label font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                             <div className="field-value" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>
                                                 {renderFieldValue(field.value, field.type)}
                                             </div>
@@ -118,21 +121,17 @@ const Template1 = ({ biodata }) => {
 
                     if (customizations.imagePlacement === 'right' && photo) {
                         return (
-                            <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
-                                <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <Divider orientation="left">
-                                            <span style={sectionDividerStyle}>{section.title}</span>
-                                        </Divider>
-                                        <div className="biodata-fields" style={{
-                                            display: 'grid',
-                                            gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
-                                            gap: '5px 15px',
-                                            textAlign: 'left',
-                                        }}>
+                            <div key={section.id} className="biodata-section mb-6">
+                                <div className="flex gap-5 items-start">
+                                    <div className="flex-1">
+                                        <SectionDivider title={section.title} color={customizations.primaryColor} />
+                                        <div className="biodata-fields grid gap-y-1 gap-x-4 text-left"
+                                             style={{
+                                                 gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                                             }}>
                                             {section.fields.filter(f => f.enabled).map(field => (
                                                 <React.Fragment key={field.id}>
-                                                    {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                                    {field.showLabel && <div className="field-label font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                                     <div className="field-value" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>
                                                         {renderFieldValue(field.value, field.type)}
                                                     </div>
@@ -140,7 +139,7 @@ const Template1 = ({ biodata }) => {
                                             ))}
                                         </div>
                                     </div>
-                                    <div style={{ width: isCircle ? 170 : 140, textAlign: 'center' }}>
+                                    <div className="text-center" style={{ width: isCircle ? 170 : 140 }}>
                                         <div style={photoWrapperStyle}>
                                             <img src={photo} alt="Profile" style={photoStyle} />
                                         </div>
@@ -153,28 +152,21 @@ const Template1 = ({ biodata }) => {
 
                 // Default rendering for other sections and cases where no photo
                 return (
-                    <div key={section.id} className="biodata-section" style={{ marginBottom: '25px' }}>
-                        <Divider orientation="left">
-                            <span style={sectionDividerStyle}>{section.title}</span>
-                        </Divider>
-                        <div className="biodata-fields" style={{
-                            display: 'grid',
-                            // If center/right alignment, labels might still be left-aligned with values
-                            gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
-                            gap: '5px 15px',
-                            textAlign: 'left', // Keep field labels/values left aligned usually
-                            marginLeft: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'right' ? 'auto' : '0'),
-                            marginRight: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'left' ? 'auto' : '0'),
-                            maxWidth: '80%', // Limit width for centered sections
-                        }}>
+                    <div key={section.id} className="biodata-section mb-6">
+                        <SectionDivider title={section.title} color={customizations.primaryColor} />
+                        <div className="biodata-fields grid gap-y-1 gap-x-4 text-left max-w-4xl"
+                             style={{
+                                 gridTemplateColumns: customizations.alignment === 'left' ? '150px 1fr' : 'max-content 1fr',
+                                 marginLeft: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'right' ? 'auto' : '0'),
+                                 marginRight: customizations.alignment === 'center' ? 'auto' : (customizations.alignment === 'left' ? 'auto' : '0'),
+                             }}>
                             {section.fields.filter(f => f.enabled).map(field => (
                                 <React.Fragment key={field.id}>
-                                    {field.showLabel && <div className="field-label" style={fieldLabelStyle}>{field.label} :</div>}
+                                    {field.showLabel && <div className="field-label font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                     <div
                                         className="field-value"
                                         style={{
-                                            gridColumn: field.showLabel ? '2 / 3' : '1 / -1', // If no label, span full width
-                                            // Adjust value alignment if needed
+                                            gridColumn: field.showLabel ? '2 / 3' : '1 / -1',
                                         }}
                                     >
                                         {renderFieldValue(field.value, field.type)}

@@ -1,7 +1,5 @@
 // src/assets/templates/template2.jsx
 import React from 'react';
-import { Row, Col } from 'antd';
-import './template2.less'; // Template specific styles
 
 const Template2 = ({ biodata }) => {
     const { header, photo, sections, customizations } = biodata;
@@ -53,14 +51,13 @@ const Template2 = ({ biodata }) => {
     };
 
     return (
-        <div className="biodata-template2-container" style={{
-            padding: '30px',
+        <div className="biodata-template2-container p-8" style={{
             fontFamily: customizations.fontFamily,
             color: '#333',
         }}>
             {header.enabled && (
-                <div className="biodata-header-t2" style={headerStyle}>
-                    {header.icon && <img src={header.icon} alt="header icon" style={{ height: '35px', marginRight: '15px' }} />}
+                <div className="biodata-header-t2 pb-3 mb-5 border-b" style={headerStyle}>
+                    {header.icon && <img src={header.icon} alt="header icon" className="h-9 mr-4 inline" />}
                     <span style={{ fontSize: '1.5em', textTransform: 'uppercase' }}>{header.text}</span>
                 </div>
             )}
@@ -70,18 +67,18 @@ const Template2 = ({ biodata }) => {
                     // Place the photo above or to the right of the personal section
                     if (customizations.imagePlacement === 'above' && photo) {
                         return (
-                            <div key={section.id} style={{ marginTop: '20px', marginBottom: '25px' }}>
-                                <div style={{ textAlign: 'center' }}>
+                            <div key={section.id} className="mt-5 mb-6">
+                                <div className="text-center">
                                     <div style={photoWrapperStyle}>
                                         <img src={photo} alt="Profile" style={photoStyle} />
                                     </div>
                                 </div>
-                                <div className="biodata-section-t2" style={{ marginTop: '10px' }}>
+                                <div className="biodata-section-t2 mt-3">
                                     <div style={sectionTitleStyle}>{section.title}</div>
-                                    <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                                    <div className="biodata-fields-t2 grid gap-y-1 gap-x-4 text-left" style={{ gridTemplateColumns: '150px 1fr' }}>
                                         {section.fields.filter(f => f.enabled).map(field => (
                                             <React.Fragment key={field.id}>
-                                                {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                                {field.showLabel && <div className="field-label-t2 font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                                 <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
                                             </React.Fragment>
                                         ))}
@@ -93,27 +90,27 @@ const Template2 = ({ biodata }) => {
 
                     if (customizations.imagePlacement === 'right' && photo) {
                         return (
-                            <div key={section.id} style={{ marginTop: '20px', marginBottom: '25px' }}>
-                                <Row gutter={24}>
-                                    <Col span={18}>
+                            <div key={section.id} className="mt-5 mb-6">
+                                <div className="grid grid-cols-3 gap-6">
+                                    <div className="col-span-2">
                                         <div className="biodata-section-t2">
                                             <div style={sectionTitleStyle}>{section.title}</div>
-                                            <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                                            <div className="biodata-fields-t2 grid gap-y-1 gap-x-4 text-left" style={{ gridTemplateColumns: '150px 1fr' }}>
                                                 {section.fields.filter(f => f.enabled).map(field => (
                                                     <React.Fragment key={field.id}>
-                                                        {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                                        {field.showLabel && <div className="field-label-t2 font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                                         <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
                                                     </React.Fragment>
                                                 ))}
                                             </div>
                                         </div>
-                                    </Col>
-                                    <Col span={6} style={{ textAlign: 'center' }}>
+                                    </div>
+                                    <div className="text-center">
                                         <div style={photoWrapperStyle}>
                                             <img src={photo} alt="Profile" style={photoStyle} />
                                         </div>
-                                    </Col>
-                                </Row>
+                                    </div>
+                                </div>
                             </div>
                         );
                     }
@@ -121,12 +118,12 @@ const Template2 = ({ biodata }) => {
 
                 // Default section rendering
                 return (
-                    <div key={section.id} className="biodata-section-t2" style={{ marginBottom: '25px' }}>
+                    <div key={section.id} className="biodata-section-t2 mb-6">
                         <div style={sectionTitleStyle}>{section.title}</div>
-                        <div className="biodata-fields-t2" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '5px 15px', textAlign: 'left' }}>
+                        <div className="biodata-fields-t2 grid gap-y-1 gap-x-4 text-left" style={{ gridTemplateColumns: '150px 1fr' }}>
                             {section.fields.filter(f => f.enabled).map(field => (
                                 <React.Fragment key={field.id}>
-                                    {field.showLabel && <div className="field-label-t2" style={fieldLabelStyle}>{field.label} :</div>}
+                                    {field.showLabel && <div className="field-label-t2 font-semibold text-gray-600" style={fieldLabelStyle}>{field.label} :</div>}
                                     <div className="field-value-t2" style={{ gridColumn: field.showLabel ? '2 / 3' : '1 / -1' }}>{renderFieldValue(field.value, field.type)}</div>
                                 </React.Fragment>
                             ))}

@@ -1,278 +1,196 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Upload, Button, Space, Radio, message } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
 import { useBiodata } from '../../contexts/BiodataContext';
+import { cn } from '../../utils/cn';
 import ReactCrop from 'react-image-crop';
+import { UploadCloud, Check, X, Trash2, Image as ImageIcon } from 'lucide-react';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const PhotoUpload = () => {
-  const { biodata, updateBiodata } = useBiodata();
+    const { biodata, updateBiodata } = useBiodata();
+    const [imgSrc, setImgSrc] = useState('');
+    const [isDragOver, setIsDragOver] = useState(false);
+    const imgRef = useRef(null);
+    const previewCanvasRef = useRef(null);
+    const fileInputRef = useRef(null);
 
-  const [imgSrc, setImgSrc] = useState('');
-  const imgRef = useRef(null);
-  const previewCanvasRef = useRef(null);
+    // Initial config logic
+    const initialAspect = biodata?.customizations?.imageShape === 'circle' ? 1 : undefined;
+    const [crop, setCrop] = useState({ unit: '%', width: 50, aspect: initialAspect });
+    const [completedCrop, setCompletedCrop] = useState(null);
 
-  const initialAspect = biodata?.customizations?.imageShape === 'circle' ? 1 : undefined;
-  const [crop, setCrop] = useState(
-    initialAspect ? { unit: '%', width: 50, aspect: initialAspect } : { unit: '%', width: 60 }
-  );
-  const [completedCrop, setCompletedCrop] = useState(null);
+    const onSelectFile = (file) => {
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            setImgSrc(reader.result || '');
+            setCrop(initialAspect ? { unit: '%', width: 50, aspect: initialAspect } : { unit: '%', width: 60 });
+        };
+        reader.readAsDataURL(file);
+    };
 
-  const { Dragger } = Upload;
+    // --- Logic for Canvas Drawing (Kept mostly same, just wrapped in useEffect) ---
+    useEffect(() => {
+        if (!completedCrop || !imgRef.current || !previewCanvasRef.current) return;
+        const image = imgRef.current;
+        const canvas = previewCanvasRef.current;
+        const crop = completedCrop;
 
-  // Accept either a File (from antd) or an input event (if you later switch to <input/>)
-  const onSelectFile = (fileOrEvent) => {
-    let file;
-    if (fileOrEvent && fileOrEvent.target && fileOrEvent.target.files) {
-      file = fileOrEvent.target.files[0];
-    } else {
-      // antd's beforeUpload gives a File directly
-      file = fileOrEvent;
-    }
-    if (!file) return false;
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
+        const ctx = canvas.getContext('2d');
+        const pixelRatio = window.devicePixelRatio || 1;
 
-    const reader = new FileReader();
-    reader.addEventListener('load', () => {
-      setImgSrc(reader.result || '');
-      setCrop(initialAspect ? { unit: '%', width: 50, aspect: initialAspect } : { unit: '%', width: 60 });
-      setCompletedCrop(null);
-    });
-    reader.readAsDataURL(file);
+        canvas.width = Math.floor(crop.width * scaleX * pixelRatio);
+        canvas.height = Math.floor(crop.height * scaleY * pixelRatio);
 
-    // prevent antd from uploading the file to any server
-    return false;
-  };
+        ctx.scale(pixelRatio, pixelRatio);
+        ctx.imageSmoothingQuality = 'high';
 
-  const onImageLoad = useCallback(() => {
-    // no-op but kept in case we want to auto-adjust crop to image on load
-  }, []);
+        const cropX = crop.x * scaleX;
+        const cropY = crop.y * scaleY;
+        const cropW = crop.width * scaleX;
+        const cropH = crop.height * scaleY;
 
-  // Draw the completed crop into the preview canvas
-  useEffect(() => {
-    if (!completedCrop || !imgRef.current || !previewCanvasRef.current) return;
+        ctx.drawImage(image, cropX, cropY, cropW, cropH, 0, 0, crop.width * scaleX, crop.height * scaleY);
+    }, [completedCrop]);
 
-    const image = imgRef.current;
-    const canvas = previewCanvasRef.current;
-    const cropObj = completedCrop;
+    const handleSave = () => {
+        if (!completedCrop || !previewCanvasRef.current) return;
+        const dataUrl = previewCanvasRef.current.toDataURL('image/jpeg', 0.9);
+        updateBiodata(d => { d.photo = dataUrl; });
+        setImgSrc(''); // Reset UI
+    };
 
-    // guard: ensure numerical values
-    const cropWidth = Number(cropObj.width || 0);
-    const cropHeight = Number(cropObj.height || 0);
-    const cropX = Number(cropObj.x || 0);
-    const cropY = Number(cropObj.y || 0);
+    const updateShape = (shape) => {
+        updateBiodata(d => { d.customizations.imageShape = shape });
+        setCrop(prev => ({ ...prev, aspect: shape === 'circle' ? 1 : undefined }));
+    };
 
-    if (cropWidth <= 0 || cropHeight <= 0) {
-      // nothing to draw
-      return;
-    }
+    return (
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-5">
+            <h3 className="font-semibold text-lg mb-4 text-slate-800 dark:text-white flex items-center gap-2">
+                <ImageIcon className="text-brand-500" size={20} /> Profile Photo
+            </h3>
 
-    // scale from displayed image to natural image
-    const displayedWidth = image.width || image.offsetWidth || 1;
-    const displayedHeight = image.height || image.offsetHeight || 1;
-    const scaleX = image.naturalWidth / displayedWidth;
-    const scaleY = image.naturalHeight / displayedHeight;
+            {/* Config Controls */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+                <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase block mb-2">Shape</label>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                        {['circle', 'rect'].map(s => (
+                            <button 
+                                key={s} 
+                                onClick={() => updateShape(s)}
+                                className={cn(
+                                    "flex-1 py-1.5 text-sm rounded-md capitalize transition-colors",
+                                    biodata.customizations.imageShape === s 
+                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium" 
+                                        : "text-slate-500"
+                                )}
+                            >
+                                {s}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    <label className="text-xs font-semibold text-slate-500 uppercase block mb-2">Placement</label>
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
+                        {['above', 'right'].map(p => (
+                            <button 
+                                key={p} 
+                                onClick={() => updateBiodata(d => d.customizations.imagePlacement = p)}
+                                className={cn(
+                                    "flex-1 py-1.5 text-sm rounded-md capitalize transition-colors",
+                                    biodata.customizations.imagePlacement === p
+                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium" 
+                                        : "text-slate-500"
+                                )}
+                            >
+                                {p}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
 
-    const pixelRatio = window.devicePixelRatio || 1;
+            {/* Display / Upload Area */}
+            {!imgSrc && (
+                biodata.photo ? (
+                    <div className="flex flex-col items-center p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300">
+                        <img 
+                            src={biodata.photo} 
+                            alt="Profile" 
+                            className={cn(
+                                "w-32 h-32 object-cover border-4 border-white dark:border-slate-700 shadow-md mb-4",
+                                biodata.customizations.imageShape === 'circle' ? 'rounded-full' : 'rounded-lg'
+                            )} 
+                        />
+                        <button 
+                            onClick={() => updateBiodata(d => d.photo = null)}
+                            className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2"
+                        >
+                            <Trash2 size={16} /> Remove Photo
+                        </button>
+                    </div>
+                ) : (
+                    <div 
+                        onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                        onDragLeave={() => setIsDragOver(false)}
+                        onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if(e.dataTransfer.files[0]) onSelectFile(e.dataTransfer.files[0]); }}
+                        onClick={() => fileInputRef.current?.click()}
+                        className={cn(
+                            "border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer transition-all",
+                            isDragOver 
+                                ? "border-brand-500 bg-brand-50 dark:bg-brand-900/10" 
+                                : "border-slate-300 dark:border-slate-700 hover:border-brand-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        )}
+                    >
+                        <input type="file" className="hidden" ref={fileInputRef} accept="image/*" onChange={(e) => onSelectFile(e.target.files?.[0])} />
+                        <div className="w-12 h-12 bg-brand-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-brand-600 mb-3">
+                            <UploadCloud size={24} />
+                        </div>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Click to upload or drag & drop</p>
+                        <p className="text-xs text-slate-500 mt-1">JPG, PNG up to 5MB</p>
+                    </div>
+                )
+            )}
 
-    // Set canvas size (in CSS pixels)
-    canvas.width = Math.round(cropWidth * pixelRatio);
-    canvas.height = Math.round(cropHeight * pixelRatio);
-    canvas.style.width = `${cropWidth}px`;
-    canvas.style.height = `${cropHeight}px`;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
-    ctx.imageSmoothingQuality = 'high';
-    ctx.clearRect(0, 0, cropWidth, cropHeight);
-
-    const sx = Math.round(cropX * scaleX);
-    const sy = Math.round(cropY * scaleY);
-    const sWidth = Math.round(cropWidth * scaleX);
-    const sHeight = Math.round(cropHeight * scaleY);
-
-    try {
-      ctx.drawImage(image, sx, sy, sWidth, sHeight, 0, 0, cropWidth, cropHeight);
-    } catch (err) {
-      // defensive: in rare cases drawImage can throw if sizes are invalid
-      // console.error('drawImage failed', err);
-    }
-  }, [completedCrop]);
-
-  const handleSaveCroppedImage = async () => {
-    if (!completedCrop || !previewCanvasRef.current) {
-      message.error('Please select a crop before saving.');
-      return;
-    }
-
-    const canvas = previewCanvasRef.current;
-
-    // Export as JPEG (change to 'image/png' if you prefer)
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
-
-    updateBiodata((draft) => {
-      draft.photo = dataUrl;
-    });
-
-    message.success('Photo saved.');
-    // clear the temporary UI
-    setImgSrc('');
-    setCrop(null);
-    setCompletedCrop(null);
-  };
-
-  const handlePlacementChange = (e) => {
-    updateBiodata((draft) => {
-      if (!draft.customizations) draft.customizations = {};
-      draft.customizations.imagePlacement = e.target.value;
-    });
-  };
-
-  const handleShapeChange = (e) => {
-    const newShape = e.target.value;
-    updateBiodata((draft) => {
-      if (!draft.customizations) draft.customizations = {};
-      draft.customizations.imageShape = newShape;
-    });
-
-    // adjust crop aspect when shape changes
-    setCrop((prev) =>
-      newShape === 'circle' ? { unit: '%', width: 50, aspect: 1 } : { unit: '%', width: 60 }
+            {/* Cropping UI */}
+            {imgSrc && (
+                <div className="mt-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                    <ReactCrop 
+                        crop={crop} 
+                        onChange={(_, pc) => setCrop(pc)} 
+                        onComplete={(c) => setCompletedCrop(c)}
+                        aspect={biodata.customizations.imageShape === 'circle' ? 1 : undefined}
+                        circularCrop={biodata.customizations.imageShape === 'circle'}
+                        className="max-h-[400px] mx-auto"
+                    >
+                        <img ref={imgRef} src={imgSrc} alt="Crop" />
+                    </ReactCrop>
+                    
+                    <div className="mt-4 flex justify-end gap-3">
+                         <button 
+                            onClick={() => setImgSrc('')}
+                            className="px-4 py-2 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                        >
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleSave}
+                            disabled={!completedCrop}
+                            className="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg shadow-sm shadow-brand-500/30 flex items-center gap-2"
+                        >
+                            <Check size={18} /> Save Photo
+                        </button>
+                    </div>
+                    {/* Hidden canvas for processing */}
+                    <canvas ref={previewCanvasRef} className="hidden" />
+                </div>
+            )}
+        </div>
     );
-  };
-
-  const handleRemovePhoto = () => {
-    updateBiodata((draft) => {
-      draft.photo = null;
-    });
-    message.info('Photo removed.');
-  };
-
-  return (
-    <div>
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ marginBottom: 8 }}>
-          <strong>Shape:</strong>
-          <Radio.Group
-            onChange={handleShapeChange}
-            value={biodata?.customizations?.imageShape || 'circle'}
-            style={{ marginLeft: 12 }}
-          >
-            <Radio.Button value="circle">Circle</Radio.Button>
-            <Radio.Button value="rect">Rectangle</Radio.Button>
-          </Radio.Group>
-        </div>
-
-        <div style={{ marginBottom: 8 }}>
-          <strong>Placement (Personal Details):</strong>
-          <Radio.Group
-            onChange={handlePlacementChange}
-            value={biodata?.customizations?.imagePlacement || 'above'}
-            style={{ marginLeft: 12 }}
-          >
-            <Radio.Button value="above">Above</Radio.Button>
-            <Radio.Button value="right">Right</Radio.Button>
-          </Radio.Group>
-        </div>
-      </div>
-
-      {biodata?.photo ? (
-        (() => {
-          const isCircle = biodata?.customizations?.imageShape === 'circle';
-          return (
-            <div style={{ marginBottom: 16 }}>
-              <div
-                style={{
-                  display: 'inline-block',
-                  padding: '3px',
-                  background: biodata?.customizations?.primaryColor || '#1890ff',
-                  borderRadius: isCircle ? '50%' : '8px',
-                }}
-              >
-                <img
-                  src={biodata.photo}
-                  alt="Profile Preview"
-                  style={{
-                    width: '150px',
-                    height: '150px',
-                    objectFit: 'cover',
-                    borderRadius: isCircle ? '50%' : '6px',
-                    display: 'block',
-                  }}
-                />
-              </div>
-              <Button onClick={handleRemovePhoto} danger style={{ marginLeft: 16 }}>
-                Remove Photo
-              </Button>
-            </div>
-          );
-        })()
-      ) : (
-        <Dragger
-          accept="image/*"
-          showUploadList={false}
-          // beforeUpload receives the file; return false to prevent upload
-          beforeUpload={(file) => onSelectFile(file)}
-          style={{ marginBottom: 12 }}
-        >
-          <Space direction="vertical" align="center" style={{ width: '100%' }}>
-            <UploadOutlined style={{ fontSize: 24 }} />
-            <div>Click or drag image here to upload</div>
-          </Space>
-        </Dragger>
-      )}
-
-      {!!imgSrc && (
-        <div>
-          <ReactCrop
-            crop={crop ?? undefined}
-            onChange={(newCrop, percentCrop) => setCrop(percentCrop || newCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            ruleOfThirds
-            circularCrop={biodata?.customizations?.imageShape === 'circle'}
-          >
-            <img
-              ref={imgRef}
-              alt="To be cropped"
-              src={imgSrc}
-              onLoad={onImageLoad}
-              style={{ maxWidth: '100%', maxHeight: 480 }}
-            />
-          </ReactCrop>
-
-          <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
-            <Button type="primary" onClick={handleSaveCroppedImage} disabled={!completedCrop}>
-              Save Cropped Photo
-            </Button>
-
-            <Button
-              onClick={() => {
-                setImgSrc('');
-                setCrop(null);
-                setCompletedCrop(null);
-              }}
-            >
-              Cancel
-            </Button>
-
-            <div style={{ marginLeft: 'auto', textAlign: 'center' }}>
-              <div style={{ fontSize: 12, color: '#666', marginBottom: 4 }}>Preview</div>
-              <canvas
-                ref={previewCanvasRef}
-                style={{
-                  maxWidth: 120,
-                  maxHeight: 120,
-                  borderRadius: biodata?.customizations?.imageShape === 'circle' ? '50%' : 6,
-                  boxShadow: '0 0 0 2px rgba(0,0,0,0.05)',
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
 };
 
 export default PhotoUpload;

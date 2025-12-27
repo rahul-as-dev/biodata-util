@@ -1,295 +1,174 @@
-// src/utils/PdfDocument.jsx
 import React from 'react';
 import {
-  Document,
-  Page,
-  View,
-  Text,
-  Image,
-  StyleSheet,
+  Document, Page, View, Text, Image, StyleSheet
 } from '@react-pdf/renderer';
+import { getThemeConfig } from './themeRegistry';
 
-const PAGE_PADDING = 20;
-const HEADER_HEIGHT = 82;
-const FOOTER_HEIGHT = 28;
+// NOTE: We are using Standard Fonts (Times-Roman, Helvetica) to prevent 404 errors.
+// These are built-in to PDF readers and highly reliable.
 
-const styles = StyleSheet.create({
-  page: {
-    padding: PAGE_PADDING,
-    fontSize: 10,
-    color: '#222',
-    lineHeight: 1.25,
-    position: 'relative',
-    backgroundColor: '#fff',
-  },
+const safe = (val, fallback) => (val === undefined || val === null ? fallback : val);
 
-  // Background image - full page low opacity layer
-  bgImage: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0.07,
-  },
+const createStyles = (customizations, template, themeConfig) => {
+  const primaryColor = safe(customizations?.primaryColor, '#e11d48');
+  const backgroundColor = safe(customizations?.backgroundColor, '#ffffff');
+  const fontFamily = safe(customizations?.fontFamily, 'sans-serif');
+  const imageShape = safe(customizations?.imageShape, 'circle');
+  const padding = safe(themeConfig?.padding, 40);
 
-  // Header top area (small)
-  headerTop: {
-    marginBottom: 6,
-  },
+  // Map to Standard PDF Fonts
+  const headerFont = fontFamily === 'sans-serif' ? 'Helvetica-Bold' : 'Times-Bold';
+  const bodyFont = fontFamily === 'monospace' ? 'Courier' : (fontFamily === 'sans-serif' ? 'Helvetica' : 'Times-Roman');
 
-  headerText: {
-    fontSize: 9,
-    color: '#666',
-  },
+  return StyleSheet.create({
+    page: {
+      backgroundColor: backgroundColor,
+      fontFamily: bodyFont,
+      fontSize: 10,
+      color: '#334155',
+      lineHeight: 1.5,
+    },
+    decorationLayer: {
+      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1,
+    },
+    decorationImage: {
+      width: '100%', height: '100%', objectFit: 'cover',
+    },
+    contentContainer: {
+      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: padding,
+    },
+    
+    headerContainer: {
+      marginBottom: 20,
+      borderBottomWidth: template === 'template2' ? 0 : 1,
+      borderBottomColor: primaryColor,
+      paddingBottom: 15,
+      alignItems: template === 'template2' ? 'flex-start' : 'center',
+      flexDirection: template === 'template2' ? 'row' : 'column',
+      gap: 15,
+    },
+    headerIcon: { width: 45, height: 45, objectFit: 'contain' },
+    headerText: { 
+      fontSize: 20, fontFamily: headerFont, color: primaryColor, textTransform: 'uppercase', letterSpacing: 2 
+    },
 
-  // Content area starts after header
-  content: {
-    marginTop: 6,
-    marginBottom: FOOTER_HEIGHT,
-    display: 'flex',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
+    section: { marginBottom: 12 },
+    
+    // Container for Section Title (Box Model)
+    sectionTitleContainer: {
+      marginBottom: 8,
+      alignSelf: 'flex-start',
+      backgroundColor: template === 'template2' ? primaryColor : 'transparent',
+      paddingVertical: template === 'template2' ? 4 : 0,
+      paddingHorizontal: template === 'template2' ? 8 : 0,
+      borderBottomWidth: template === 'template2' ? 0 : 0.5,
+      borderBottomColor: '#cbd5e1',
+      // Conditional Spread for BorderRadius
+      ...(template === 'template2' && { borderRadius: 3 }),
+    },
+    // Text for Section Title (Font)
+    sectionTitleText: {
+      fontSize: 11,
+      fontFamily: headerFont,
+      color: template === 'template2' ? '#ffffff' : primaryColor,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
 
-  // Default two-column layout
-  halfColumn: {
-    width: '50%',
-    boxSizing: 'border-box',
-    paddingRight: 6,
-  },
-
-  fullWidth: {
-    width: '100%',
-    paddingRight: 0,
-  },
-
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: '600',
-    marginBottom: 6,
-    color: '#0a47a1',
-  },
-
-  fieldRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    marginBottom: 4,
-    alignItems: 'flex-start',
-  },
-
-  fieldLabel: {
-    width: 110,
-    fontSize: 9,
-    color: '#444',
-  },
-
-  fieldValue: {
-    flex: 1,
-    fontSize: 9.5,
-    color: '#111',
-    whiteSpace: 'pre-wrap',
-  },
-
-  // Personal section special layout when photo on right
-  personalRow: {
-    display: 'flex',
-    flexDirection: 'row',
-    gap: 8,
-  },
-
-  personalLeft: {
-    flex: 1,
-  },
-
-  personalRightPhotoWrap: {
-    width: 100,
-    alignItems: 'center',
-  },
-
-  // Photo shapes
-  photoCircle: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    overflow: 'hidden',
-  },
-
-  photoRect: {
-    width: 88,
-    height: 110,
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-
-  photoImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-
-  footer: {
-    position: 'absolute',
-    bottom: PAGE_PADDING - 4,
-    left: PAGE_PADDING,
-    right: PAGE_PADDING,
-    textAlign: 'center',
-    fontSize: 8.5,
-    color: '#666',
-  },
-});
-
-// Simple heuristic to force a section full-width
-function shouldUseFullWidth(section) {
-  if (!section) return false;
-  const fields = section.fields || [];
-  if (fields.length > 6) return true;
-  for (const f of fields) {
-    if (typeof f.value === 'string' && (f.value.match(/\n/g) || []).length >= 3) return true;
-  }
-  return false;
-}
-
-function prettyKey(k) {
-  if (!k) return '';
-  return String(k)
-    .replace(/([A-Z])/g, ' $1')
-    .replace(/_/g, ' ')
-    .replace(/^./, (s) => s.toUpperCase());
-}
-
-// Section renderer — generic sections
-const GenericSection = ({ section }) => {
-  if (!section || section.enabled === false) return null;
-  const fields = (section.fields || []).filter((f) => f && f.enabled !== false);
-
-  return (
-    <View style={shouldUseFullWidth(section) ? styles.fullWidth : styles.halfColumn} key={section.id}>
-      <Text style={styles.sectionTitle}>{section.title || 'Section'}</Text>
-      {fields.length === 0 ? (
-        <Text style={styles.fieldValue}>No data provided.</Text>
-      ) : (
-        fields.map((f) => (
-          <View style={styles.fieldRow} key={f.id}>
-            {f.showLabel ? <Text style={styles.fieldLabel}>{f.label ? prettyKey(f.label) : ''}</Text> : <Text style={styles.fieldLabel} />}
-            <Text style={styles.fieldValue}>{f.value != null && f.value !== '' ? String(f.value) : '-'}</Text>
-          </View>
-        ))
-      )}
-    </View>
-  );
+    row: { flexDirection: 'row', marginBottom: 5 },
+    labelCol: { width: '35%', fontSize: 9, color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' },
+    valueCol: { width: '65%', fontSize: 10, color: '#0f172a' },
+    
+    personalContainer: { 
+      flexDirection: 'row', marginBottom: 20, gap: 20, 
+      borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 20 
+    },
+    photo: {
+      width: 100, height: 100, objectFit: 'cover',
+      borderWidth: 2, borderColor: primaryColor,
+      // Conditional Spread for Radius
+      ...(imageShape === 'circle' ? { borderRadius: 50 } : { borderRadius: 4 }),
+    },
+    footer: { 
+      position: 'absolute', bottom: 20, left: 0, right: 0, 
+      textAlign: 'center', fontSize: 8, color: '#94a3b8' 
+    }
+  });
 };
 
-/**
- * Personal section renderer that places photo inside the personal block
- * either to the right of the fields or above them depending on imagePlacement.
- */
-const PersonalSection = ({ section, photo, imagePlacement = 'above', imageShape = 'circle' }) => {
-  if (!section || section.enabled === false) return null;
-  const fields = (section.fields || []).filter((f) => f && f.enabled !== false);
+const FieldRow = ({ label, value, styles }) => (
+  <View style={styles.row}>
+    <Text style={styles.labelCol}>{label} {label ? ':' : ''}</Text>
+    <Text style={styles.valueCol}>{value}</Text>
+  </View>
+);
 
-  // Full-width personal section (we expect personal to be important)
-  return (
-    <View style={styles.fullWidth} key={section.id}>
-      <Text style={styles.sectionTitle}>{section.title || 'Personal Details'}</Text>
+export const PdfDocument = ({ biodata }) => {
+  const header = biodata?.header || { enabled: false };
+  const photo = biodata?.photo || null;
+  const sections = biodata?.sections || [];
+  const template = biodata?.template || 'template1';
+  const customizations = biodata?.customizations || {};
+  const processedBg = biodata?.processedBg || null;
 
-      {imagePlacement === 'right' && photo ? (
-        // Two-column within the personal block: left = fields, right = photo
-        <View style={styles.personalRow}>
-          <View style={styles.personalLeft}>
-            {fields.map((f) => (
-              <View style={styles.fieldRow} key={f.id}>
-                {f.showLabel ? <Text style={styles.fieldLabel}>{f.label ? prettyKey(f.label) : ''}</Text> : <Text style={styles.fieldLabel} />}
-                <Text style={styles.fieldValue}>{f.value != null && f.value !== '' ? String(f.value) : '-'}</Text>
-              </View>
-            ))}
-          </View>
+  const themeConfig = getThemeConfig(customizations.themeId);
+  const styles = createStyles(customizations, template, themeConfig);
 
-          <View style={styles.personalRightPhotoWrap}>
-            <View style={imageShape === 'circle' ? styles.photoCircle : styles.photoRect}>
-              <Image src={photo} style={styles.photoImage} />
-            </View>
-          </View>
-        </View>
-      ) : (
-        // photo above (centered), then fields below
-        <>
-          {photo ? (
-            <View style={{ width: '100%', alignItems: 'center', marginBottom: 6 }}>
-              <View style={imageShape === 'circle' ? styles.photoCircle : styles.photoRect}>
-                <Image src={photo} style={styles.photoImage} />
-              </View>
-            </View>
-          ) : null}
+  // Background Selection
+  const finalBg = processedBg || (themeConfig.asset && !themeConfig.asset.endsWith('.svg') ? themeConfig.asset : null);
 
-          {fields.map((f) => (
-            <View style={styles.fieldRow} key={f.id}>
-              {f.showLabel ? <Text style={styles.fieldLabel}>{f.label ? prettyKey(f.label) : ''}</Text> : <Text style={styles.fieldLabel} />}
-              <Text style={styles.fieldValue}>{f.value != null && f.value !== '' ? String(f.value) : '-'}</Text>
-            </View>
-          ))}
-        </>
-      )}
-    </View>
-  );
-};
-
-/**
- * PdfDocument: main export
- * - Renders background image as a full-page Image (resizeMode="cover")
- * - Personal section contains the photo in the correct place (right/top)
- */
-export const PdfDocument = ({ biodata = {} }) => {
-  const { header, photo, sections = [], customizations = {} } = biodata;
-
-  const primaryColor = customizations.primaryColor || '#0a47a1';
-  const imagePlacement = customizations.imagePlacement || 'above'; // 'right' or 'above'
-  const imageShape = customizations.imageShape || 'circle';
-  const bgImage = customizations.backgroundImage || null;
-
-  // find personal section
-  const personalSection = (sections || []).find((s) => s.id === 'personal') || null;
-
-  // build list of other sections in the original order but excluding personal
-  const otherSections = (sections || []).filter((s) => s && s.id !== 'personal' && s.enabled !== false);
-
-  // header short text from state if available
-  const headerText = header && header.enabled ? header.text : '';
+  const personalSection = sections.find(s => s.id === 'personal');
+  const otherSections = sections.filter(s => s.id !== 'personal');
 
   return (
-    <Document author="Biodata Builder">
-      <Page size="A4" style={styles.page} wrap={false}>
-        {/* Background image - use Image and cover it */}
-        {bgImage ? <Image src={bgImage} style={styles.bgImage} resizeMode="cover" /> : null}
-
-        {/* Small header line / title above content */}
-        {headerText ? (
-          <View style={styles.headerTop}>
-            <Text style={styles.headerText}>{headerText}</Text>
-          </View>
+    <Document title="Marriage Biodata">
+      <Page size="A4" style={styles.page}>
+        
+        {/* Fix: Check for truthy finalBg to avoid rendering empty string */}
+        {finalBg ? (
+            <View style={styles.decorationLayer} fixed>
+                <Image src={finalBg} style={styles.decorationImage} />
+            </View>
         ) : null}
 
-        <View style={styles.content}>
-          {/* Personal section is always full-width first */}
-          {personalSection && personalSection.enabled !== false ? (
-            <PersonalSection
-              section={personalSection}
-              photo={photo}
-              imagePlacement={imagePlacement}
-              imageShape={imageShape}
-            />
-          ) : null}
+        <View style={styles.contentContainer}>
+            {header.enabled ? (
+            <View style={styles.headerContainer}>
+                {header.icon ? <Image src={header.icon} style={styles.headerIcon} /> : null}
+                <Text style={styles.headerText}>{header.text}</Text>
+            </View>
+            ) : null}
 
-          {/* Render the rest in two-column flow */}
-          {otherSections.map((sec) => (
-            <GenericSection section={sec} key={sec.id} />
-          ))}
+            {/* Personal Section */}
+            {personalSection && personalSection.enabled ? (
+            <View style={styles.personalContainer}>
+                <View style={{flex: 1}}>
+                    <View style={styles.sectionTitleContainer}>
+                        <Text style={styles.sectionTitleText}>{personalSection.title}</Text>
+                    </View>
+                    {personalSection.fields.map(f => f.enabled ? (
+                        <FieldRow key={f.id} label={f.label} value={f.value} styles={styles} />
+                    ) : null)}
+                </View>
+                {/* Fix: Check photo string length to avoid empty string render */}
+                {photo ? <Image src={photo} style={styles.photo} /> : null}
+            </View>
+            ) : null}
+
+            {/* Other Sections */}
+            {otherSections.map(section => section.enabled ? (
+            <View key={section.id} style={styles.section} wrap={false}>
+                <View style={styles.sectionTitleContainer}>
+                    <Text style={styles.sectionTitleText}>{section.title}</Text>
+                </View>
+                {section.fields.map(f => f.enabled ? (
+                <FieldRow key={f.id} label={f.label} value={f.value} styles={styles} />
+                ) : null)}
+            </View>
+            ) : null)}
+
+            <Text style={styles.footer} fixed>Created with VivahBio</Text>
         </View>
-
-        <Text style={styles.footer} fixed>
-          Generated by Biodata Builder • {new Date().toLocaleString()}
-        </Text>
       </Page>
     </Document>
   );
