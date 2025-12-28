@@ -12,6 +12,12 @@ const initialBiodataState = {
         text: '|| Shree Ganesh ||',
         enabled: true,
     },
+    // --- NEW: Overview Field ---
+    overview: {
+        enabled: true,
+        // title: 'About Me',
+        text: 'Believing in family values and modern thinking. Looking for a partner who is understanding and caring.'
+    },
     photo: null, 
     sections: [
         {
@@ -176,6 +182,13 @@ export const BiodataProvider = ({ children }) => {
         });
     };
 
+    // --- NEW: Helper to update overview ---
+    const updateOverview = (key, value) => {
+        updateBiodata(draft => {
+            draft.overview[key] = value;
+        });
+    };
+
     const value = {
         biodata,
         updateBiodata,
@@ -187,7 +200,8 @@ export const BiodataProvider = ({ children }) => {
         updateFieldValue,
         updateFieldLabel,
         toggleFieldEnabled,
-        toggleFieldShowLabel
+        toggleFieldShowLabel,
+        updateOverview
     };
 
     return <BiodataContext.Provider value={value}>{children}</BiodataContext.Provider>;

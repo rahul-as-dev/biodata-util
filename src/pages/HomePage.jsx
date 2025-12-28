@@ -9,7 +9,7 @@ import { cn } from '../utils/cn';
 import { useTheme } from '../contexts/ThemeContext'; // Import Global Theme Hook
 
 import ganeshaIcon from '../assets/icon-images/default-ganesha-icon.png';
-import bgPattern from '../assets/bg/bg1.svg';
+import bgPattern from '../assets/document-bg/bg1.svg';
 
 const HomePage = () => {
   const navigate = useNavigate();

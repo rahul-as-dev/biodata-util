@@ -1,8 +1,7 @@
 // src/utils/themeRegistry.js
 
 // Import your background assets here
-import floralRedBg from '../assets/bg/floral-red.png'; 
-// import royalGoldBg from '../assets/bg/royal-gold.png';
+import floralRedBg from '../assets/document-bg/floral-red.png'; 
 
 export const THEMES = {
     'minimal': {

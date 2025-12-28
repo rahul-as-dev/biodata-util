@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useBiodata } from '../contexts/BiodataContext';
 import { useTheme } from '../contexts/ThemeContext';
-import { generatePdf } from '../utils/PDFGenerator';
 import BiodataPreview from '../components/BiodataPreview';
 import PhotoUpload from '../components/Forms/PhotoUpload';
 import Sidebar from '../components/Layouts/Sidebar';
@@ -9,65 +8,13 @@ import DraggableList from '../components/common/DraggableList';
 import { cn } from '../utils/cn';
 import {
     Plus, Trash2, Eye, EyeOff, FileText, Image,
-    Palette as PaletteIcon, Download, ChevronRight,
+    Palette as PaletteIcon, ChevronRight,
     GripVertical, ArrowUp, ArrowDown,
     ZoomIn, ZoomOut, Maximize, Minimize2, Maximize2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// --- 1. RIGHT PANEL BACKGROUND (Fireflies) ---
-const CanvasBackground = React.memo(() => {
-  const fireflies = Array.from({ length: 20 }).map((_, i) => ({
-    id: i,
-    top: `${Math.random() * 100}%`,
-    left: `${Math.random() * 100}%`,
-    moveX: Math.random() * 100 - 50,
-    moveY: Math.random() * 100 - 50,
-  }));
-
-  return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none bg-slate-950 select-none">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#1e1b4b] via-[#311b92] to-[#4a044e] opacity-80" />
-      {fireflies.map((fly) => (
-        <motion.div
-          key={fly.id}
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{
-            opacity: [0, 1, 0.5, 1, 0],
-            scale: [0, 1, 1.5, 0],
-            x: [0, fly.moveX],
-            y: [0, fly.moveY],
-          }}
-          transition={{
-            duration: Math.random() * 10 + 10,
-            repeat: Infinity,
-            ease: "easeInOut",
-            times: [0, 0.2, 0.5, 0.8, 1]
-          }}
-          style={{ top: fly.top, left: fly.left }}
-          className="absolute w-2 h-2 bg-yellow-100 rounded-full blur-[2px] shadow-[0_0_15px_rgba(253,224,71,0.6)]"
-        />
-      ))}
-      <motion.div 
-         animate={{ rotate: 360 }}
-         transition={{ duration: 100, repeat: Infinity, ease: "linear" }}
-         className="absolute -top-[20%] -right-[20%] w-[80%] h-[80%] opacity-20 bg-gradient-to-b from-purple-500 to-transparent rounded-full blur-3xl"
-      />
-      <div className="absolute inset-0 bg-[radial-gradient(circle,transparent_40%,rgba(0,0,0,0.5)_100%)]" />
-    </div>
-  );
-});
-
-// --- 2. LEFT PANEL BACKGROUND (Blobs) ---
-const LeftPanelBackground = React.memo(() => (
-    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-slate-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-950" />
-        <div className="absolute inset-0 opacity-[0.8] dark:opacity-[0.3]" style={{ backgroundImage: 'radial-gradient(#94a3b8 1.5px, transparent 1.5px)', backgroundSize: '24px 24px' }}></div>
-        <motion.div animate={{ x: [0, 30, -20, 0], y: [0, -40, 20, 0], scale: [1, 1.1, 0.9, 1] }} transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }} className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-rose-200/60 dark:bg-rose-900/20 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen" />
-        <motion.div animate={{ x: [0, -30, 20, 0], y: [0, 40, -20, 0], scale: [1, 1.2, 0.8, 1] }} transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 2 }} className="absolute bottom-[-10%] left-[-10%] w-[500px] h-[500px] bg-amber-200/60 dark:bg-amber-900/20 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen" />
-        <motion.div animate={{ x: [0, 40, -40, 0], y: [0, -30, 30, 0], scale: [1, 1.1, 0.9, 1] }} transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 4 }} className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-purple-200/40 dark:bg-purple-900/20 rounded-full blur-[80px] mix-blend-multiply dark:mix-blend-screen" />
-    </div>
-));
+import { RoyalDiya as PreviewTheme } from '../assets/background-theme/RoyalDiya';
+import { DottedEditorTheme as EditorTheme } from '../assets/background-theme/DottedEditorTheme';
 
 // --- FieldEditor ---
 const FieldEditor = ({ sectionId, field }) => {
@@ -120,6 +67,49 @@ const SectionEditor = ({ section, isFirst, isLast, onMoveUp, onMoveDown }) => {
                             <button onClick={() => addField(section.id, 'New Field', 'text')} className="flex-1 py-2 text-xs font-semibold text-rose-600 bg-rose-50/50 border border-rose-200 border-dashed rounded-lg hover:bg-rose-100/50 transition-colors">+ TEXT</button>
                             <button onClick={() => addField(section.id, 'Details', 'textarea')} className="flex-1 py-2 text-xs font-semibold text-slate-600 bg-white/50 border border-slate-300 border-dashed rounded-lg hover:bg-slate-50/50 transition-colors">+ PARAGRAPH</button>
                         </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+const OverviewEditor = () => {
+    const { biodata, updateOverview } = useBiodata();
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    if (!biodata.overview) return null;
+
+    return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-4 shadow-sm group">
+            <div className="flex items-center gap-2 p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                <button onClick={() => setIsExpanded(!isExpanded)} className="text-slate-400">
+                    <ChevronRight size={18} className={cn("transition-transform duration-200", isExpanded && "rotate-90")} />
+                </button>
+                <span className="flex-1 font-bold text-slate-700 dark:text-slate-200 text-sm uppercase">
+                    Introduction / Overview
+                </span>
+                <button onClick={() => updateOverview('enabled', !biodata.overview.enabled)} className="p-2 text-slate-400 hover:text-rose-600 transition-colors">
+                    {biodata.overview.enabled ? <Eye size={16} /> : <EyeOff size={16} />}
+                </button>
+            </div>
+            
+            <AnimatePresence>
+                {isExpanded && (
+                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="p-3">
+                        <input 
+                            value={biodata.overview.title}
+                            onChange={(e) => updateOverview('title', e.target.value)}
+                            className="w-full text-xs font-bold uppercase text-slate-500 bg-transparent border-b border-transparent focus:border-rose-500 outline-none pb-1 mb-2"
+                            placeholder="TITLE (e.g. ABOUT ME)"
+                        />
+                        <textarea 
+                            rows={3} 
+                            value={biodata.overview.text}
+                            onChange={(e) => updateOverview('text', e.target.value)}
+                            className="w-full text-sm text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-950/50 p-2 rounded-lg border border-transparent focus:border-rose-500 outline-none resize-y placeholder:text-slate-400"
+                            placeholder="Write a brief introduction..."
+                        />
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -193,7 +183,7 @@ const CreatePage = () => {
                     isFullScreen && "min-w-0 w-0 overflow-hidden border-none"
                 )}
             >
-                <LeftPanelBackground />
+                <EditorTheme />
                 <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 p-2 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
                     <div className="flex px-2 gap-1">
                          {tabs.map(tab => (
@@ -205,6 +195,7 @@ const CreatePage = () => {
                     <AnimatePresence mode="wait">
                         {activeTab === 'sections' && (
                             <motion.div key="sections" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
+                                <OverviewEditor />
                                 <div className="flex flex-col">
                                     {biodata.sections.map((section, index) => (
                                         <SectionEditor key={section.id} section={section} isFirst={index === 0} isLast={index === biodata.sections.length - 1} onMoveUp={() => moveSection(index, -1)} onMoveDown={() => moveSection(index, 1)} />
@@ -237,7 +228,7 @@ const CreatePage = () => {
                     isFullScreen ? "!fixed !inset-0 !z-[9999] h-screen w-screen bg-slate-900" : "relative"
                 )}
             >
-                <CanvasBackground />
+                <PreviewTheme />
 
                 {/* EXIT BUTTON: Z-Index higher than container */}
                 <div className="absolute top-6 right-6 z-[10000]">
