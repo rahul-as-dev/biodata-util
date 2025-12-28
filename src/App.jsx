@@ -1,20 +1,27 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { BiodataProvider } from './contexts/BiodataContext';
-import { ThemeProvider } from './contexts/ThemeContext'; // Import ThemeProvider
-import Landing from './pages/Landing';
+import { ThemeProvider } from './contexts/ThemeContext';
+import Layout from './components/Layouts/Layout';
 import HomePage from './pages/HomePage';
+import CreatePage from './pages/CreatePage';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   return (
     <ThemeProvider>
       <BiodataProvider>
-        <Router>
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/create" element={<HomePage />} />
+            <Route element={<Layout />}>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/create" element={<CreatePage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+            </Route>
           </Routes>
-        </Router>
+        </BrowserRouter>
       </BiodataProvider>
     </ThemeProvider>
   );

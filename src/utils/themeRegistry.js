@@ -1,28 +1,39 @@
 // src/utils/themeRegistry.js
-import bg1 from '../assets/bg/bg1.svg'; 
-import bg2 from '../assets/bg/bg2.svg';
+
+// Import your background assets here
+import floralRedBg from '../assets/bg/floral-red.png'; 
+// import royalGoldBg from '../assets/bg/royal-gold.png';
 
 export const THEMES = {
-  'minimal': {
-    id: 'minimal',
-    name: 'Clean Minimal',
-    asset: null,
-    padding: 30,
-  },
-  'floral': {
-    id: 'floral',
-    name: 'Floral Frame',
-    asset: bg1, // This is the raw SVG
-    padding: 55, // Extra padding to not overlap floral borders
-  },
-  'geometric': {
-    id: 'geometric',
-    name: 'Modern Geometric',
-    asset: bg2, // This is the raw SVG
-    padding: 45,
-  }
+    'minimal': {
+        id: 'minimal',
+        name: 'Minimal White',
+        asset: null,
+        styles: {
+            primaryColor: '#e11d48',
+            fontFamily: 'sans-serif',
+            // Minimal padding for plain paper
+            paddingTop: 40,
+            paddingBottom: 40,
+            paddingHorizontal: 40,
+        }
+    },
+    'floral-red': {
+        id: 'floral-red',
+        name: 'Ganesh Floral',
+        asset: floralRedBg, // Using the imported image
+        styles: {
+            primaryColor: '#991b1b',
+            fontFamily: 'serif',
+            // HIGHER PADDING to push text inside the flower border
+            paddingTop: 65,    
+            paddingBottom: 65,
+            paddingHorizontal: 145, 
+        }
+    },
+    // Add more themes...
 };
 
 export const getThemeConfig = (themeId) => {
-  return THEMES[themeId] || THEMES['minimal'];
+    return THEMES[themeId] || THEMES['minimal'];
 };

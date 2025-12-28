@@ -15,7 +15,7 @@ A small React app to create and export marriage biodata (resume-like profiles) w
   - `App.js` — app root
   - `index.js` — entry point
   - `contexts/BiodataContext.js` — main state/provider
-  - `pages/HomePage.jsx` — editor + preview UI
+  - `pages/CreatePage.jsx` — editor + preview UI
   - `components/` — UI components (Sidebar, BiodataPreview, PhotoUpload, DraggableList, ...)
   - `utils/PDFGenerator.js` — PDF export helper
 
@@ -59,15 +59,15 @@ I scanned the source to surface likely build/runtime issues (case-sensitive impo
 	  - restore `react-sortable-hoc` in `package.json` (less preferred).
 
 2) Case-sensitive import issues (on Linux/macOS filesystem these will fail)
-	- In `src/pages/HomePage.jsx`:
+	- In `src/pages/CreatePage.jsx`:
 	  - `import Sidebar from '../components/Layout/Sidebar'` — actual path is `src/components/Layouts/Sidebar.jsx` (note the plural `Layouts`).
 	  - `import DraggableList from '../components/Common/DraggableList'` — actual path is `src/components/common/DraggableList.jsx` (lowercase `common`).
 	  - `import { generatePdf } from '../utils/pdfGenerator'` — actual file is `src/utils/PDFGenerator.js` (capital `PDFGenerator`). Update to `../utils/PDFGenerator`.
 	- Fix these import paths (or rename files) to match exact casing.
 
 3) Missing/wrong imports and small bugs
-	- `HomePage.jsx` uses React hooks and icons without importing them in some places:
-	  - `useState` is used but not imported from React in `HomePage.jsx`.
+	- `CreatePage.jsx` uses React hooks and icons without importing them in some places:
+	  - `useState` is used but not imported from React in `CreatePage.jsx`.
 	  - `MenuOutlined` is referenced in `FieldEditor` but not imported there — the drag-handle is already provided by `DraggableList`; remove the duplicate `MenuOutlined` usage or import it where necessary.
 	- `DraggableList.jsx` currently uses `react-sortable-hoc` API (`SortableContainer`, `SortableElement`, `SortableHandle`). If you migrate to `react-sortablejs`, rewrite the component to use the wrapper's API (or use plain `sortablejs`).
 
@@ -79,12 +79,12 @@ I scanned the source to surface likely build/runtime issues (case-sensitive impo
 
 ## Recommended immediate fixes
 
-1. Fix import casing in `src/pages/HomePage.jsx`:
+1. Fix import casing in `src/pages/CreatePage.jsx`:
 	- Sidebar: `../components/Layouts/Sidebar`
 	- DraggableList: `../components/common/DraggableList`
 	- PDF util: `../utils/PDFGenerator`
 
-2. Update `src/pages/HomePage.jsx` top-level imports to include `useState`:
+2. Update `src/pages/CreatePage.jsx` top-level imports to include `useState`:
 	- `import React, { useState } from 'react';`
 
 3. Migrate `src/components/common/DraggableList.jsx` from `react-sortable-hoc` to `react-sortablejs` (or add `react-sortable-hoc` back to `package.json`). Example migration path:

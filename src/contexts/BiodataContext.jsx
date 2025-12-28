@@ -1,8 +1,10 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { produce } from 'immer';
 import { v4 as uuidv4 } from 'uuid';
 
 const BiodataContext = createContext();
+
+const STORAGE_KEY = 'vivahpatra_biodata';
 
 const initialBiodataState = {
     header: {
@@ -60,7 +62,39 @@ const initialBiodataState = {
 };
 
 export const BiodataProvider = ({ children }) => {
-    const [biodata, setBiodata] = useState(initialBiodataState);
+
+    // 1. Initialize State from LocalStorage
+    const [biodata, setBiodata] = useState(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                const savedData = localStorage.getItem(STORAGE_KEY);
+                if (savedData) {
+                    const parsedData = JSON.parse(savedData);
+                    // Merge with initial state to ensure new structure changes don't break old saves
+                    // Note: We prefer saved data, but fallback to initial for deep properties if missing
+                    return { ...initialBiodataState, ...parsedData, 
+                        // Ensure customizations object exists even if old save didn't have it
+                        customizations: { ...initialBiodataState.customizations, ...parsedData.customizations } 
+                    };
+                }
+            } catch (error) {
+                console.error("Failed to load biodata from local storage:", error);
+            }
+        }
+        // Fallback to initial default
+        // Note: We use static IDs above for initial state to avoid hydration mismatch if SSR (though this is likely SPA)
+        // If generating fresh state, we might want to regenerate UUIDs, but static is fine for default example.
+        return initialBiodataState;
+    });
+
+    // 2. Persist State on Change
+    useEffect(() => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(biodata));
+        } catch (error) {
+            console.error("Failed to save biodata to local storage:", error);
+        }
+    }, [biodata]);
 
     const updateBiodata = (updater) => {
         setBiodata(prev => produce(prev, updater));

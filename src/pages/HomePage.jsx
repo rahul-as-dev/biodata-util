@@ -1,291 +1,242 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useBiodata } from '../contexts/BiodataContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { generatePdf } from '../utils/PDFGenerator'; // PDF Generator
-import BiodataPreview from '../components/BiodataPreview';
-import DraggableList from '../components/common/DraggableList';
-import PhotoUpload from '../components/Forms/PhotoUpload';
-import Sidebar from '../components/Layouts/Sidebar';
-import { cn } from '../utils/cn';
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { 
-    Plus, Trash2, Eye, EyeOff, FileText, Image, 
-    Palette as PaletteIcon, Download, ChevronRight, X,
-    Sun, Moon, GripVertical
+  Heart, Download, Palette, ShieldCheck, 
+  Moon, Sun, ChevronRight 
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { cn } from '../utils/cn'; 
+import { useTheme } from '../contexts/ThemeContext'; // Import Global Theme Hook
 
-// --- FieldEditor and SectionEditor (Paste your existing ones here to save space) ---
-// Note: Keep the exact same FieldEditor/SectionEditor logic as previous response
-// ... 
-const FieldEditor = ({ sectionId, field }) => {
-    const { updateFieldValue, updateFieldLabel, toggleFieldEnabled, removeField } = useBiodata();
+import ganeshaIcon from '../assets/icon-images/default-ganesha-icon.png';
+import bgPattern from '../assets/bg/bg1.svg';
 
-    return (
-        <div className={cn(
-            "grid grid-cols-12 gap-3 items-start p-3 rounded-lg border transition-all",
-            field.enabled 
-                ? "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700" 
-                : "bg-slate-50 dark:bg-slate-900 border-dashed border-slate-300 opacity-70"
-        )}>
-            {/* Label */}
-            <div className="col-span-4 sm:col-span-3">
-                <input
-                    type="text"
-                    value={field.label}
-                    onChange={(e) => updateFieldLabel(sectionId, field.id, e.target.value)}
-                    className="w-full text-xs font-bold uppercase text-slate-500 bg-transparent border-b border-transparent focus:border-brand-500 focus:text-brand-600 outline-none pb-1"
-                    placeholder="LABEL"
-                />
-            </div>
-            {/* Value */}
-            <div className="col-span-6 sm:col-span-7">
-                {field.type === 'textarea' ? (
-                    <textarea
-                        rows={2}
-                        value={field.value}
-                        onChange={(e) => updateFieldValue(sectionId, field.id, e.target.value)}
-                        className="w-full text-sm text-slate-800 dark:text-slate-200 bg-transparent outline-none resize-y placeholder:text-slate-300"
-                        placeholder="Details..."
-                    />
-                ) : (
-                    <input
-                        type="text"
-                        value={field.value}
-                        onChange={(e) => updateFieldValue(sectionId, field.id, e.target.value)}
-                        className="w-full text-sm text-slate-800 dark:text-slate-200 bg-transparent outline-none placeholder:text-slate-300"
-                        placeholder="Value..."
-                    />
-                )}
-            </div>
-            {/* Actions */}
-            <div className="col-span-2 flex justify-end gap-1">
-                <button onClick={() => toggleFieldEnabled(sectionId, field.id)} className="p-1.5 text-slate-400 hover:text-brand-500">
-                     {field.enabled ? <Eye size={14} /> : <EyeOff size={14} />}
-                </button>
-                <button onClick={() => removeField(sectionId, field.id)} className="p-1.5 text-slate-400 hover:text-red-500">
-                    <Trash2 size={14} />
-                </button>
-            </div>
-        </div>
-    );
-};
-
-const SectionEditor = ({ section }) => {
-    const { updateBiodata, addField, removeSection, toggleSectionEnabled } = useBiodata();
-    const [isExpanded, setIsExpanded] = useState(true);
-
-    const onFieldOrderChange = (newFields) => {
-        updateBiodata(draft => {
-            const s = draft.sections.find(sec => sec.id === section.id);
-            if(s) s.fields = newFields;
-        });
-    };
-
-    return (
-        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden mb-4 shadow-sm">
-            <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                <button onClick={() => setIsExpanded(!isExpanded)} className="text-slate-400">
-                    <ChevronRight size={18} className={cn("transition-transform", isExpanded && "rotate-90")} />
-                </button>
-                <input 
-                    value={section.title}
-                    onChange={(e) => updateBiodata(d => { d.sections.find(s => s.id === section.id).title = e.target.value })}
-                    className="flex-1 font-bold text-slate-700 dark:text-slate-200 bg-transparent outline-none uppercase"
-                />
-                <button onClick={() => toggleSectionEnabled(section.id)} className="p-2 text-slate-400 hover:text-brand-600">
-                    {section.enabled ? <Eye size={16} /> : <EyeOff size={16} />}
-                </button>
-                <button onClick={() => removeSection(section.id)} className="p-2 text-slate-400 hover:text-red-600">
-                    <Trash2 size={16} />
-                </button>
-            </div>
-            <AnimatePresence>
-                {isExpanded && (
-                    <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="p-3">
-                        <DraggableList items={section.fields} onSortEnd={onFieldOrderChange} renderItem={(field) => <FieldEditor sectionId={section.id} field={field} />} />
-                        <div className="mt-3 flex gap-2">
-                            <button onClick={() => addField(section.id, 'New Field', 'text')} className="flex-1 py-2 text-xs font-semibold text-brand-600 bg-brand-50 border border-brand-200 border-dashed rounded-lg">
-                                + TEXT
-                            </button>
-                            <button onClick={() => addField(section.id, 'Details', 'textarea')} className="flex-1 py-2 text-xs font-semibold text-slate-600 bg-white border border-slate-300 border-dashed rounded-lg">
-                                + PARAGRAPH
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-        </div>
-    );
-};
-
-// --- Resizable Home Page ---
 const HomePage = () => {
-    const { biodata, updateBiodata, addSection } = useBiodata();
-    const { isDark, toggleTheme } = useTheme();
-    
-    // UI State
-    const [activeTab, setActiveTab] = useState('sections');
-    const [newSectionTitle, setNewSectionTitle] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false);
+  const navigate = useNavigate();
+  const { isDark, toggleTheme } = useTheme(); // Use global state
+  const [scrolled, setScrolled] = useState(false);
 
-    // Resizable Logic
-    const [leftWidth, setLeftWidth] = useState(40); // Percentage
-    const containerRef = useRef(null);
-    const [isDragging, setIsDragging] = useState(false);
+  // Handle Navbar Scroll Effect
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-    const handleMouseDown = (e) => {
-        setIsDragging(true);
-        e.preventDefault();
-    };
+  const fadeInUp = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
+  };
 
-    useEffect(() => {
-        const handleMouseMove = (e) => {
-            if (!isDragging || !containerRef.current) return;
-            const containerRect = containerRef.current.getBoundingClientRect();
-            const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-            // Limit min/max width
-            if (newWidth > 20 && newWidth < 80) setLeftWidth(newWidth);
-        };
-        const handleMouseUp = () => setIsDragging(false);
-
-        if (isDragging) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-        }
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDragging]);
-
-    const handleDownload = async () => {
-        setIsGenerating(true);
-        try {
-            await generatePdf(biodata);
-        } catch (error) {
-            alert('Failed to generate PDF');
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    const tabs = [
-        { id: 'sections', label: 'Details', icon: <FileText size={18} /> },
-        { id: 'photo', label: 'Photo', icon: <Image size={18} /> },
-        { id: 'design', label: 'Design', icon: <PaletteIcon size={18} /> },
-    ];
-
-    const onSectionSort = ({ oldIndex, newIndex }) => {
-        if (oldIndex === newIndex) return;
-        updateBiodata(draft => {
-            const [removed] = draft.sections.splice(oldIndex, 1);
-            draft.sections.splice(newIndex, 0, removed);
-        });
-    };
-
-    return (
-        <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden">
-            {/* Header */}
-            <header className="h-14 shrink-0 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 z-20">
-                <div className="flex items-center gap-2 font-bold text-lg">
-                   <div className="w-7 h-7 bg-brand-600 rounded flex items-center justify-center text-white text-sm">V</div>
-                   VivahBio
-                </div>
-                <div className="flex items-center gap-3">
-                    <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800">
-                        {isDark ? <Sun size={18} /> : <Moon size={18} />}
-                    </button>
-                    <button 
-                        onClick={handleDownload}
-                        disabled={isGenerating}
-                        className="bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all disabled:opacity-50"
-                    >
-                        {isGenerating ? 'Generating...' : <><Download size={16} /> Download PDF</>}
-                    </button>
-                </div>
-            </header>
-
-            {/* Main Workspace (Resizable) */}
-            <div ref={containerRef} className="flex-1 flex overflow-hidden relative">
-                
-                {/* Left Panel: Editor */}
-                <div style={{ width: `${leftWidth}%` }} className="flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 min-w-[300px]">
-                    {/* Tabs */}
-                    <div className="flex border-b border-slate-200 dark:border-slate-800">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={cn(
-                                    "flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 border-b-2 transition-colors",
-                                    activeTab === tab.id 
-                                        ? "border-brand-600 text-brand-600 bg-brand-50/50 dark:bg-brand-900/10" 
-                                        : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                                )}
-                            >
-                                {tab.icon} {tab.label}
-                            </button>
-                        ))}
-                    </div>
-                    {/* Content */}
-                    <div className="flex-1 overflow-y-auto p-4 scrollbar-thin">
-                        <AnimatePresence mode="wait">
-                            {activeTab === 'sections' && (
-                                <motion.div key="sections" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                    <DraggableList items={biodata.sections} onSortEnd={onSectionSort} renderItem={(section) => <SectionEditor section={section} />} />
-                                    <button onClick={() => setIsModalOpen(true)} className="w-full py-3 mt-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl text-slate-500 hover:border-brand-500 hover:text-brand-600 flex items-center justify-center gap-2 transition-colors">
-                                        <Plus size={18} /> Add New Section
-                                    </button>
-                                </motion.div>
-                            )}
-                            {activeTab === 'photo' && <motion.div key="photo" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><PhotoUpload /></motion.div>}
-                            {activeTab === 'design' && <motion.div key="design" initial={{ opacity: 0 }} animate={{ opacity: 1 }}><Sidebar /></motion.div>}
-                        </AnimatePresence>
-                    </div>
-                </div>
-
-                {/* Resizer Handle */}
-                <div
-                    onMouseDown={handleMouseDown}
-                    className={cn(
-                        "w-1.5 cursor-col-resize bg-slate-100 dark:bg-slate-800 hover:bg-brand-400 active:bg-brand-600 transition-colors flex items-center justify-center z-10",
-                        isDragging && "bg-brand-600 w-2"
-                    )}
-                >
-                    <GripVertical size={12} className="text-slate-400" />
-                </div>
-
-                {/* Right Panel: Preview */}
-                <div style={{ width: `${100 - leftWidth}%` }} className="bg-slate-100 dark:bg-slate-950 relative overflow-hidden flex flex-col items-center justify-center min-w-[400px]">
-                     {/* Scale Controls Overlay (Optional but nice) */}
-                     <div className="absolute top-4 right-4 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur px-3 py-1 rounded-full text-xs font-mono text-slate-500 border border-slate-200 dark:border-slate-700">
-                        A4 Preview
-                     </div>
-                     
-                     <div className="w-full h-full overflow-auto p-8 flex justify-center">
-                        <div className="origin-top scale-[0.85] lg:scale-[0.65] xl:scale-[0.8] 2xl:scale-[0.9] transition-transform">
-                            <BiodataPreview biodata={biodata} />
-                        </div>
-                     </div>
-                </div>
+  return (
+    <div className="min-h-screen relative overflow-x-hidden selection:bg-brand-500 selection:text-white bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+      
+      {/* --- Navbar --- */}
+      {/* <nav className={cn(
+        "fixed top-0 w-full z-50 border-b transition-all duration-300",
+        scrolled 
+          ? "backdrop-blur-md bg-white/70 dark:bg-slate-950/70 border-slate-200 dark:border-slate-800 shadow-sm" 
+          : "bg-transparent border-transparent"
+      )}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center gap-2">
+              <img src={ganeshaIcon} alt="Ganesha" className="w-8 h-8 opacity-80" />
+              <span className="text-xl font-bold bg-gradient-to-r from-brand-500 to-brand-600 bg-clip-text text-transparent">
+                VivahBio
+              </span>
             </div>
-
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-                    <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl w-full max-w-sm shadow-2xl">
-                        <h3 className="font-bold text-lg mb-4 dark:text-white">Add Section</h3>
-                        <input autoFocus value={newSectionTitle} onChange={(e) => setNewSectionTitle(e.target.value)} onKeyDown={(e)=>e.key==='Enter'&& handleAddSection()} className="w-full px-4 py-2 border rounded-lg mb-4 dark:bg-slate-800 dark:border-slate-700 dark:text-white" placeholder="Section Name" />
-                        <div className="flex justify-end gap-2">
-                            <button onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-                            <button onClick={() => { if(newSectionTitle) { addSection(newSectionTitle); setIsModalOpen(false); setNewSectionTitle(''); } }} className="px-4 py-2 bg-brand-600 text-white rounded-lg">Add</button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <div className="flex items-center gap-4">
+              <button 
+                onClick={toggleTheme}
+                className={cn(
+                  "p-2 rounded-full transition-colors",
+                  "hover:bg-slate-200 dark:hover:bg-slate-800",
+                  "text-slate-600 dark:text-slate-300"
+                )}
+              >
+                {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button 
+                onClick={() => navigate('/create')}
+                className={cn(
+                  "hidden sm:flex items-center gap-2 px-5 py-2 rounded-full font-medium transition-all",
+                  "bg-brand-600 hover:bg-brand-700 text-white",
+                  "hover:shadow-lg hover:shadow-brand-500/30"
+                )}
+              >
+                Create Now
+              </button>
+            </div>
+          </div>
         </div>
-    );
+      </nav> */}
+
+      {/* --- Hero Section --- */}
+      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28">
+        <div className="absolute inset-0 overflow-hidden -z-10 pointer-events-none">
+          {/* Blobs */}
+          <div className="absolute top-0 left-10 w-72 h-72 bg-brand-300/30 dark:bg-brand-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob" />
+          <div className="absolute top-0 right-10 w-72 h-72 bg-purple-300/30 dark:bg-purple-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-2000" />
+          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-300/30 dark:bg-pink-900/20 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-lighten animate-blob animation-delay-4000" />
+          <div className="absolute inset-0 opacity-10 dark:opacity-5" style={{ backgroundImage: `url(${bgPattern})` }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-12 items-center">
+          
+          <motion.div 
+            initial="hidden" animate="visible"
+            variants={{ visible: { transition: { staggerChildren: 0.2 } } }}
+            className="text-center lg:text-left"
+          >
+            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-300 text-sm font-medium mb-6">
+              <Heart size={14} className="fill-brand-500 text-brand-500" />
+              <span>Trusted by 10,000+ Families</span>
+            </motion.div>
+            
+            <motion.h1 variants={fadeInUp} className="text-5xl lg:text-7xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-6 leading-tight">
+              Create the Perfect <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-500 to-purple-600">
+                Marriage Biodata
+              </span>
+            </motion.h1>
+            
+            <motion.p variants={fadeInUp} className="text-lg text-slate-600 dark:text-slate-300 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              Design a professional and elegant biodata in minutes. Choose from our premium templates, customize details, and download as high-quality PDF.
+            </motion.p>
+            
+            <motion.div variants={fadeInUp} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <button 
+                onClick={() => navigate('/create')}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-lg font-semibold transition-all",
+                  "bg-brand-600 hover:bg-brand-700 text-white",
+                  "hover:scale-105 hover:shadow-xl hover:shadow-brand-500/20"
+                )}
+              >
+                Create Biodata Free
+                <ChevronRight size={20} />
+              </button>
+              <button className={cn(
+                "flex items-center justify-center gap-2 px-8 py-3.5 rounded-full text-lg font-medium transition-all",
+                "bg-white dark:bg-slate-800 text-slate-700 dark:text-white",
+                "border border-slate-200 dark:border-slate-700",
+                "hover:bg-slate-50 dark:hover:bg-slate-700"
+              )}>
+                View Templates
+              </button>
+            </motion.div>
+          </motion.div>
+
+          {/* Right Visual (Mockup) */}
+          <motion.div 
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="hidden lg:block relative"
+          >
+             <div className="relative w-full max-w-md mx-auto">
+               <div className="absolute -top-4 -right-4 w-24 h-24 bg-brand-500/20 rounded-full blur-xl" />
+               <div className="absolute -bottom-4 -left-4 w-32 h-32 bg-purple-500/20 rounded-full blur-xl" />
+               
+               <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-2xl shadow-slate-400/20 dark:shadow-black/50 p-4 border border-slate-100 dark:border-slate-700 transform rotate-[-3deg] hover:rotate-0 transition-transform duration-500">
+                  <div className="aspect-[3/4] bg-slate-50 dark:bg-slate-900 rounded-lg overflow-hidden relative">
+                      <div className="h-32 bg-brand-100 dark:bg-brand-900/40 w-full relative">
+                        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-slate-300 dark:bg-slate-700 border-4 border-white dark:border-slate-800 overflow-hidden shadow-sm">
+                           <img src={ganeshaIcon} className="w-full h-full object-cover p-2 opacity-50" alt="Avatar" />
+                        </div>
+                      </div>
+                      <div className="mt-12 text-center px-6 space-y-3">
+                         <div className="h-6 w-3/4 mx-auto bg-slate-200 dark:bg-slate-700 rounded mb-4" />
+                         <div className="h-3 w-full bg-slate-200 dark:bg-slate-700 rounded" />
+                         <div className="h-3 w-5/6 bg-slate-200 dark:bg-slate-700 rounded" />
+                         <div className="h-3 w-4/6 bg-slate-200 dark:bg-slate-700 rounded" />
+                      </div>
+                      <div className="absolute bottom-4 right-4 bg-brand-500 text-white text-xs px-2 py-1 rounded shadow-md">
+                         PDF Ready
+                       </div>
+                  </div>
+               </div>
+               {/* Second Card Peeking */}
+               <div className="absolute top-4 left-4 -z-10 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full h-full border border-slate-200 dark:border-slate-700 transform rotate-[3deg] opacity-60"></div>
+             </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* --- Features Section --- */}
+      <section className="py-20 bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Why Choose VivahBio?</h2>
+            <p className="text-slate-600 dark:text-slate-400">Everything you need to create a biodata that stands out.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <FeatureCard 
+              icon={<Palette className="w-8 h-8 text-brand-500" />}
+              title="Premium Templates"
+              desc="Choose from a wide variety of culturally tuned, modern, and traditional designs."
+              className="hover:border-brand-200"
+            />
+            <FeatureCard 
+              icon={<Download className="w-8 h-8 text-purple-500" />}
+              title="Instant PDF Download"
+              desc="Get a high-quality print-ready PDF immediately after entering your details."
+              className="hover:border-purple-200"
+            />
+            <FeatureCard 
+              icon={<ShieldCheck className="w-8 h-8 text-emerald-500" />}
+              title="Private & Secure"
+              desc="We don't store your personal data. Your biodata is generated locally in your browser."
+              className="hover:border-emerald-200"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* --- Footer --- */}
+      <footer className="bg-white dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 pt-16 pb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+          <div className="flex items-center gap-2 mb-6">
+             <img src={ganeshaIcon} alt="Ganesha" className="w-8 h-8 grayscale opacity-50" />
+             <span className="text-lg font-bold text-slate-700 dark:text-slate-300">VivahBio</span>
+          </div>
+          <p className="text-slate-500 dark:text-slate-500 text-sm mb-8 text-center">
+            Helping families connect through beautiful introductions. <br />Made with ❤️ in India.
+          </p>
+          <div className="flex gap-6 text-sm text-slate-400">
+            <a href="#" className="hover:text-brand-500 transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-brand-500 transition-colors">Terms of Service</a>
+            <a href="#" className="hover:text-brand-500 transition-colors">Contact</a>
+          </div>
+          <div className="mt-8 text-xs text-slate-300 dark:text-slate-700">
+            © {new Date().getFullYear()} VivahBio. All rights reserved.
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
 };
+
+// Refactored FeatureCard Component using cn()
+const FeatureCard = ({ icon, title, desc, className }) => (
+  <motion.div 
+    whileHover={{ y: -5 }}
+    className={cn(
+      "p-8 rounded-2xl shadow-sm hover:shadow-md transition-all",
+      "bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700",
+      className 
+    )}
+  >
+    <div className="bg-slate-50 dark:bg-slate-700/50 w-14 h-14 rounded-xl flex items-center justify-center mb-6">
+      {icon}
+    </div>
+    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3">{title}</h3>
+    <p className="text-slate-600 dark:text-slate-400 leading-relaxed">
+      {desc}
+    </p>
+  </motion.div>
+);
 
 export default HomePage;

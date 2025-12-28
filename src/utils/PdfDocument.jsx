@@ -4,19 +4,20 @@ import {
 } from '@react-pdf/renderer';
 import { getThemeConfig } from './themeRegistry';
 
-// NOTE: We are using Standard Fonts (Times-Roman, Helvetica) to prevent 404 errors.
-// These are built-in to PDF readers and highly reliable.
-
+// Safe helper
 const safe = (val, fallback) => (val === undefined || val === null ? fallback : val);
 
 const createStyles = (customizations, template, themeConfig) => {
-  const primaryColor = safe(customizations?.primaryColor, '#e11d48');
+  const primaryColor = safe(customizations?.primaryColor, themeConfig.styles.primaryColor);
   const backgroundColor = safe(customizations?.backgroundColor, '#ffffff');
-  const fontFamily = safe(customizations?.fontFamily, 'sans-serif');
+  const fontFamily = safe(customizations?.fontFamily, themeConfig.styles.fontFamily);
   const imageShape = safe(customizations?.imageShape, 'circle');
-  const padding = safe(themeConfig?.padding, 40);
 
-  // Map to Standard PDF Fonts
+  // Dynamic Padding based on the Theme's border thickness
+  const paddingTop = themeConfig.styles.paddingTop || 30;
+  const paddingBottom = themeConfig.styles.paddingBottom || 30;
+  const paddingH = themeConfig.styles.paddingHorizontal || 40;
+
   const headerFont = fontFamily === 'sans-serif' ? 'Helvetica-Bold' : 'Times-Bold';
   const bodyFont = fontFamily === 'monospace' ? 'Courier' : (fontFamily === 'sans-serif' ? 'Helvetica' : 'Times-Roman');
 
@@ -27,17 +28,33 @@ const createStyles = (customizations, template, themeConfig) => {
       fontSize: 10,
       color: '#334155',
       lineHeight: 1.5,
+      position: 'relative', // Essential for layering
     },
+    // LAYER 1: Background Decoration
     decorationLayer: {
-      position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: -1,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      width: '100%',
+      height: '100%',
+      zIndex: -1, // Push to back
     },
     decorationImage: {
-      width: '100%', height: '100%', objectFit: 'cover',
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover', // Ensures it covers the A4 page
     },
+    // LAYER 2: Content
     contentContainer: {
-      position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: padding,
+      flex: 1,
+      // READ FROM REGISTRY EXACTLY LIKE THE HTML PREVIEW DOES
+      paddingTop: themeConfig.styles.paddingTop,
+      paddingBottom: themeConfig.styles.paddingBottom,
+      paddingLeft: themeConfig.styles.paddingHorizontal,
+      paddingRight: themeConfig.styles.paddingHorizontal,
     },
     
+    // Layout Logic (Template 1 vs Template 2)
     headerContainer: {
       marginBottom: 20,
       borderBottomWidth: template === 'template2' ? 0 : 1,
@@ -47,58 +64,58 @@ const createStyles = (customizations, template, themeConfig) => {
       flexDirection: template === 'template2' ? 'row' : 'column',
       gap: 15,
     },
-    headerIcon: { width: 45, height: 45, objectFit: 'contain' },
+    headerIcon: { width: 40, height: 40, objectFit: 'contain' },
     headerText: { 
-      fontSize: 20, fontFamily: headerFont, color: primaryColor, textTransform: 'uppercase', letterSpacing: 2 
+      fontSize: 18, fontFamily: headerFont, color: primaryColor, textTransform: 'uppercase', letterSpacing: 1.5, textAlign: 'center' 
     },
-
     section: { marginBottom: 12 },
-    
-    // Container for Section Title (Box Model)
     sectionTitleContainer: {
       marginBottom: 8,
-      alignSelf: 'flex-start',
+      alignSelf: 'stretch',
       backgroundColor: template === 'template2' ? primaryColor : 'transparent',
-      paddingVertical: template === 'template2' ? 4 : 0,
+      paddingVertical: template === 'template2' ? 4 : 2,
       paddingHorizontal: template === 'template2' ? 8 : 0,
-      borderBottomWidth: template === 'template2' ? 0 : 0.5,
+      borderBottomWidth: template === 'template2' ? 0 : 1,
       borderBottomColor: '#cbd5e1',
-      // Conditional Spread for BorderRadius
-      ...(template === 'template2' && { borderRadius: 3 }),
+      borderRadius: template === 'template2' ? 3 : 1,
     },
-    // Text for Section Title (Font)
     sectionTitleText: {
       fontSize: 11,
       fontFamily: headerFont,
       color: template === 'template2' ? '#ffffff' : primaryColor,
       textTransform: 'uppercase',
       letterSpacing: 1,
+      textAlign: template === 'template1' ? 'center' : 'left'
     },
-
-    row: { flexDirection: 'row', marginBottom: 5 },
-    labelCol: { width: '35%', fontSize: 9, color: '#64748b', fontWeight: 'bold', textTransform: 'uppercase' },
+    row: { 
+        flexDirection: 'row', marginBottom: 4, 
+        borderBottomWidth: template === 'template2' ? 0.5 : 0, 
+        borderBottomColor: '#f1f5f9',
+        paddingBottom: template === 'template2' ? 2 : 0 
+    },
+    labelCol: { width: '35%', fontSize: 9, color: '#64748b', fontWeight: 'bold' },
     valueCol: { width: '65%', fontSize: 10, color: '#0f172a' },
     
     personalContainer: { 
-      flexDirection: 'row', marginBottom: 20, gap: 20, 
+      flexDirection: template === 'template2' ? 'row-reverse' : 'row', 
+      marginBottom: 20, gap: 20, 
       borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingBottom: 20 
     },
     photo: {
-      width: 100, height: 100, objectFit: 'cover',
-      borderWidth: 2, borderColor: primaryColor,
-      // Conditional Spread for Radius
-      ...(imageShape === 'circle' ? { borderRadius: 50 } : { borderRadius: 4 }),
+      width: 110, height: 110, objectFit: 'cover',
+      borderWidth: 3, borderColor: primaryColor,
+      borderRadius: imageShape === 'circle' ? 55 : 4,
     },
     footer: { 
-      position: 'absolute', bottom: 20, left: 0, right: 0, 
-      textAlign: 'center', fontSize: 8, color: '#94a3b8' 
+      position: 'absolute', bottom: 15, left: 0, right: 0, 
+      textAlign: 'center', fontSize: 8, color: '#94a3b8', opacity: 0.7 
     }
   });
 };
 
 const FieldRow = ({ label, value, styles }) => (
   <View style={styles.row}>
-    <Text style={styles.labelCol}>{label} {label ? ':' : ''}</Text>
+    <Text style={styles.labelCol}>{label}</Text>
     <Text style={styles.valueCol}>{value}</Text>
   </View>
 );
@@ -109,13 +126,14 @@ export const PdfDocument = ({ biodata }) => {
   const sections = biodata?.sections || [];
   const template = biodata?.template || 'template1';
   const customizations = biodata?.customizations || {};
-  const processedBg = biodata?.processedBg || null;
-
+  
+  // 1. Get Theme Data
   const themeConfig = getThemeConfig(customizations.themeId);
   const styles = createStyles(customizations, template, themeConfig);
 
-  // Background Selection
-  const finalBg = processedBg || (themeConfig.asset && !themeConfig.asset.endsWith('.svg') ? themeConfig.asset : null);
+  // 2. Resolve Assets
+  // Prefer the processedBg (from Generator) if available, otherwise use theme asset
+  const bgImage = biodata.processedBg || themeConfig.asset;
 
   const personalSection = sections.find(s => s.id === 'personal');
   const otherSections = sections.filter(s => s.id !== 'personal');
@@ -124,50 +142,51 @@ export const PdfDocument = ({ biodata }) => {
     <Document title="Marriage Biodata">
       <Page size="A4" style={styles.page}>
         
-        {/* Fix: Check for truthy finalBg to avoid rendering empty string */}
-        {finalBg ? (
+        {/* === LAYER 1: DECORATIVE FRAME === */}
+        {bgImage && (
             <View style={styles.decorationLayer} fixed>
-                <Image src={finalBg} style={styles.decorationImage} />
+                <Image src={bgImage} style={styles.decorationImage} />
             </View>
-        ) : null}
+        )}
 
+        {/* === LAYER 2: TEXT CONTENT === */}
         <View style={styles.contentContainer}>
-            {header.enabled ? (
-            <View style={styles.headerContainer}>
-                {header.icon ? <Image src={header.icon} style={styles.headerIcon} /> : null}
-                <Text style={styles.headerText}>{header.text}</Text>
-            </View>
-            ) : null}
+            
+            {/* Header */}
+            {header.enabled && (
+                <View style={styles.headerContainer}>
+                    {header.icon && <Image src={header.icon} style={styles.headerIcon} />}
+                    <Text style={styles.headerText}>{header.text}</Text>
+                </View>
+            )}
 
-            {/* Personal Section */}
-            {personalSection && personalSection.enabled ? (
-            <View style={styles.personalContainer}>
-                <View style={{flex: 1}}>
-                    <View style={styles.sectionTitleContainer}>
-                        <Text style={styles.sectionTitleText}>{personalSection.title}</Text>
+            {/* Personal Details & Photo */}
+            {personalSection && personalSection.enabled && (
+                <View style={styles.personalContainer}>
+                    <View style={{flex: 1}}>
+                         {/* Personal Section Title removed in Personal Grid usually, but adding for consistency if needed */}
+                         {/* <Text style={styles.sectionTitleText}>{personalSection.title}</Text> */}
+                        {personalSection.fields.map(f => f.enabled && (
+                            <FieldRow key={f.id} label={f.label} value={f.value} styles={styles} />
+                        ))}
                     </View>
-                    {personalSection.fields.map(f => f.enabled ? (
+                    {photo && <Image src={photo} style={styles.photo} />}
+                </View>
+            )}
+
+            {/* All Other Sections */}
+            {otherSections.map(section => section.enabled && (
+                <View key={section.id} style={styles.section} wrap={false}>
+                    <View style={styles.sectionTitleContainer}>
+                        <Text style={styles.sectionTitleText}>{section.title}</Text>
+                    </View>
+                    {section.fields.map(f => f.enabled && (
                         <FieldRow key={f.id} label={f.label} value={f.value} styles={styles} />
-                    ) : null)}
+                    ))}
                 </View>
-                {/* Fix: Check photo string length to avoid empty string render */}
-                {photo ? <Image src={photo} style={styles.photo} /> : null}
-            </View>
-            ) : null}
+            ))}
 
-            {/* Other Sections */}
-            {otherSections.map(section => section.enabled ? (
-            <View key={section.id} style={styles.section} wrap={false}>
-                <View style={styles.sectionTitleContainer}>
-                    <Text style={styles.sectionTitleText}>{section.title}</Text>
-                </View>
-                {section.fields.map(f => f.enabled ? (
-                <FieldRow key={f.id} label={f.label} value={f.value} styles={styles} />
-                ) : null)}
-            </View>
-            ) : null)}
-
-            <Text style={styles.footer} fixed>Created with VivahBio</Text>
+            <Text style={styles.footer} fixed>Created with BiodataMaker • Free Tool</Text>
         </View>
       </Page>
     </Document>

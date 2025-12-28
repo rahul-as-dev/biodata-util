@@ -1,0 +1,9 @@
+<!-- public/logo.svg -->
+<svg viewBox="0 0 100 100" fill="none" stroke="#e11d48" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 30 55 V 20 A 5 5 0 0 1 35 15 H 65 A 5 5 0 0 1 70 20 V 55" />
+  <line x1="40" y1="30" x2="60" y2="30" stroke-width="4" />
+  <line x1="40" y1="42" x2="60" y2="42" stroke-width="4" />
+  <path d="M 20 60 Q 35 90 50 75 Q 65 90 80 60" />
+  <path d="M 35 60 Q 50 85 65 60" />
+  <path d="M 50 75 V 55" />
+</svg>
