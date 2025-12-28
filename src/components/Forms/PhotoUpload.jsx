@@ -99,7 +99,7 @@ const PhotoUpload = () => {
                         {['above', 'right'].map(p => (
                             <button 
                                 key={p} 
-                                onClick={() => updateBiodata(d => d.customizations.imagePlacement = p)}
+                                onClick={() => updateBiodata(d => { d.customizations.imagePlacement = p; })}
                                 className={cn(
                                     "flex-1 py-1.5 text-sm rounded-md capitalize transition-colors",
                                     biodata.customizations.imagePlacement === p
@@ -127,7 +127,7 @@ const PhotoUpload = () => {
                             )} 
                         />
                         <button 
-                            onClick={() => updateBiodata(d => d.photo = null)}
+                            onClick={() => updateBiodata(d => { d.photo = null; })}
                             className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2"
                         >
                             <Trash2 size={16} /> Remove Photo
