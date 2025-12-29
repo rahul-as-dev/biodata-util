@@ -6,11 +6,13 @@ import PhotoUpload from '../components/Forms/PhotoUpload';
 import Sidebar from '../components/Layouts/Sidebar';
 import DraggableList from '../components/common/DraggableList'; 
 import { cn } from '../utils/cn';
+import { generatePdf } from '../utils/PDFGenerator';
+
 import {
     Plus, Trash2, Eye, EyeOff, FileText, Image,
     Palette as PaletteIcon, ChevronRight,
     GripVertical, ArrowUp, ArrowDown,
-    ZoomIn, ZoomOut, Maximize, Minimize2, Maximize2
+    ZoomIn, ZoomOut, Maximize, Minimize2, Maximize2, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { RoyalDiya as PreviewTheme } from '../assets/background-theme/RoyalDiya';
@@ -57,7 +59,7 @@ const SectionEditor = ({ section, isFirst, isLast, onMoveUp, onMoveDown }) => {
                     <button onClick={(e) => { e.stopPropagation(); onMoveDown(); }} disabled={isLast} className="p-1.5 text-slate-500 hover:text-rose-600 rounded-md disabled:opacity-30 transition-all"><ArrowDown size={14} /></button>
                 </div>
                 <button onClick={() => toggleSectionEnabled(section.id)} className="p-2 text-slate-400 hover:text-rose-600 transition-colors">{section.enabled ? <Eye size={16} /> : <EyeOff size={16} />}</button>
-                <button onClick={() => removeSection(section.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>
+                {section?.id != 'contact' && (<button onClick={() => removeSection(section.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 size={16} /></button>)}
             </div>
             <AnimatePresence>
                 {isExpanded && (
@@ -137,6 +139,14 @@ const CreatePage = () => {
     const containerRef = useRef(null);
     const [isDragging, setIsDragging] = useState(false);
 
+    const handleDownload = async () => {
+        try {
+            await generatePdf(biodata);
+        } catch (error) {
+            alert('Failed to generate PDF');
+        }
+    };
+
     const handleMouseDown = (e) => { setIsDragging(true); e.preventDefault(); };
 
     useEffect(() => {
@@ -144,7 +154,7 @@ const CreatePage = () => {
             if (!isDragging || !containerRef.current) return;
             const containerRect = containerRef.current.getBoundingClientRect();
             const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
-            if (newWidth > 20 && newWidth < 80) setLeftWidth(newWidth);
+            if (newWidth > 30 && newWidth < 70) setLeftWidth(newWidth);
         };
         const handleMouseUp = () => setIsDragging(false);
         if (isDragging) { document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseUp); }
@@ -166,9 +176,9 @@ const CreatePage = () => {
     };
 
     const tabs = [
-        { id: 'sections', label: 'Details', icon: <FileText size={18} /> },
-        { id: 'photo', label: 'Photo', icon: <Image size={18} /> },
-        { id: 'design', label: 'Design', icon: <PaletteIcon size={18} /> },
+        { id: 'sections', label: 'Details', icon: <FileText size={20} /> },
+        { id: 'photo', label: 'Photo', icon: <Image size={20} /> },
+        { id: 'design', label: 'Design', icon: <PaletteIcon size={20} /> },
     ];
 
     return (
@@ -184,12 +194,19 @@ const CreatePage = () => {
                 )}
             >
                 <EditorTheme />
-                <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 p-2 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
-                    <div className="flex px-2 gap-1">
+                <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 p-4 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
+                    <div className="flex px-4 gap-4">
                          {tabs.map(tab => (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("p-2 text-sm font-medium flex items-center justify-center gap-2 rounded-lg transition-all", activeTab === tab.id ? "text-rose-600 bg-white/80 dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600" : "text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-800")} title={tab.label}>{tab.icon} <span className="hidden xl:inline">{tab.label}</span></button>
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("cursor-pointer p-2 text-sm font-medium flex items-center justify-center gap-2 rounded-lg transition-all", activeTab === tab.id ? "text-rose-600 bg-white/80 dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700")} title={tab.label}>{tab.icon} <span className="hidden xl:inline">{tab.label}</span></button>
                         ))}
                     </div>
+                    <button
+                        onClick={handleDownload}
+                        className="cursor-pointer group flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 shadow-md hover:shadow-lg transition-all active:scale-95"
+                    >
+                        <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" /> 
+                        <span>Download PDF</span>
+                    </button>
                 </div>
                 <div className="relative z-10 flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
                     <AnimatePresence mode="wait">

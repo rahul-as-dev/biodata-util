@@ -71,42 +71,52 @@ const Sidebar = () => {
             </Section>
             
             {/* 1. LAYOUT STRUCTURE */}
+            {/* 1. LAYOUT STRUCTURE (Updated for Scroll & Compactness) */}
             <Section title="Layout Structure" icon={<Columns size={18} />}>
-                <div className="grid grid-cols-2 gap-3">
-                    {LAYOUT_TEMPLATES.map((layout) => {
-                        const isActive = biodata.template === layout.id;
-                        return (
-                            <button
-                                key={layout.id}
-                                onClick={() => updateBiodata(d => { d.template = layout.id })}
-                                className={cn(
-                                    "flex flex-col gap-2 p-2 rounded-xl border-2 transition-all hover:shadow-md text-left",
-                                    isActive
-                                        ? "border-brand-500 bg-brand-50/50 dark:bg-brand-900/10" 
-                                        : "border-slate-200 dark:border-slate-700 hover:border-brand-200 dark:hover:border-slate-600 bg-white dark:bg-slate-800"
-                                )}
-                            >
-                                {/* Preview Canvas */}
-                                <div className={cn(
-                                    "w-full h-20 rounded-lg overflow-hidden border shadow-sm",
-                                    isActive ? "border-brand-200 dark:border-brand-800 bg-white dark:bg-slate-900" : "border-slate-100 dark:border-slate-600 bg-slate-50 dark:bg-slate-800"
-                                )}>
-                                    <layout.Preview isActive={isActive} />
-                                </div>
-                                
-                                {/* Footer Label */}
-                                <div className="flex items-center justify-between w-full px-1">
-                                    <span className={cn(
-                                        "text-xs font-semibold", 
-                                        isActive ? "text-brand-700 dark:text-brand-400" : "text-slate-600 dark:text-slate-400"
+                {/* Scrollable Container */}
+                <div className="max-h-[320px] overflow-y-auto pr-1 -mr-2 custom-scrollbar">
+                    {/* Compact 3-Column Grid */}
+                    <div className="grid grid-cols-3 gap-2">
+                        {LAYOUT_TEMPLATES.map((layout) => {
+                            const isActive = biodata.template === layout.id;
+                            return (
+                                <button
+                                    key={layout.id}
+                                    onClick={() => updateBiodata(d => { d.template = layout.id })}
+                                    className={cn(
+                                        "flex flex-col gap-1.5 p-1.5 rounded-lg border-2 transition-all hover:shadow-sm text-left group relative",
+                                        isActive
+                                            ? "border-brand-500 bg-brand-50/50 dark:bg-brand-900/10" 
+                                            : "border-slate-100 dark:border-slate-700 hover:border-brand-200 dark:hover:border-slate-600 bg-white dark:bg-slate-800"
+                                    )}
+                                    title={layout.name}
+                                >
+                                    {/* Smaller Preview Canvas (h-14) */}
+                                    <div className={cn(
+                                        "w-full h-14 rounded overflow-hidden border",
+                                        isActive ? "border-brand-200 dark:border-brand-800 bg-white dark:bg-slate-900" : "border-slate-50 dark:border-slate-600 bg-slate-50 dark:bg-slate-800"
                                     )}>
-                                        {layout.name}
-                                    </span>
-                                    {isActive && <div className="w-1.5 h-1.5 rounded-full bg-brand-500" />}
-                                </div>
-                            </button>
-                        );
-                    })}
+                                        <layout.Preview isActive={isActive} />
+                                    </div>
+                                    
+                                    {/* Minimal Label */}
+                                    <div className="flex items-center justify-center w-full">
+                                        <span className={cn(
+                                            "text-[10px] font-medium truncate w-full text-center", 
+                                            isActive ? "text-brand-700 dark:text-brand-400 font-bold" : "text-slate-500 dark:text-slate-400"
+                                        )}>
+                                            {layout.name}
+                                        </span>
+                                    </div>
+
+                                    {/* Active Dot (Absolute top-right) */}
+                                    {isActive && (
+                                        <div className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-brand-500 shadow-sm" />
+                                    )}
+                                </button>
+                            );
+                        })}
+                    </div>
                 </div>
             </Section>
 

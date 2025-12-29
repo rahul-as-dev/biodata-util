@@ -3,7 +3,6 @@ import { useTheme } from '../../contexts/ThemeContext'; // Adjust path as needed
 import { Sun, Moon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { useBiodata } from '../../contexts/BiodataContext';
-import { generatePdf } from '../../utils/PDFGenerator';
 import { cn } from '../../utils/cn';
 
 const Navbar = () => {
@@ -11,14 +10,6 @@ const Navbar = () => {
   const location = useLocation();
 
   const { biodata } = useBiodata();
-
-  const handleDownload = async () => {
-    try {
-        await generatePdf(biodata);
-    } catch (error) {
-        alert('Failed to generate PDF');
-    }
-  };
 
   const isActive = (path) => location.pathname === path 
     ? "text-rose-600 dark:text-rose-400 font-semibold" 
@@ -58,11 +49,7 @@ const Navbar = () => {
           {isDark ? <Sun size={20} /> : <Moon size={20} />}
         </button>
         
-        
-        {location.pathname === '/create' ? (<button
-          onClick={handleDownload}
-          className={cn("cursor-pointer bg-brand-600 hover:bg-brand-700 text-white px-4 py-1.5 rounded-full text-sm font-medium flex items-center gap-2 transition-all disabled:opacity-50")}
-        >Download PDF</button>) :
+        {location.pathname !== '/create' &&
         (<Link to="/create" className="hidden sm:flex bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 rounded-full text-sm font-medium transition-colors shadow-lg shadow-rose-200 dark:shadow-none">
           Create Biodata
         </Link>)}
