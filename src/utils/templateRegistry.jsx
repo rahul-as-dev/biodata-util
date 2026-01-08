@@ -25,7 +25,12 @@ import {
     ModernCardsRenderer,
     MinimalistLineRenderer,
     LeftStripRenderer,
-    BoxedEleganceRenderer
+    BoxedEleganceRenderer,
+    MahalArchRenderer,
+    RoyalSilkRenderer,
+    VedicPillarsRenderer,
+    RajwadaRenderer,
+    DivineMandalaRenderer
 } from '../assets/layout-structure/DocumentLayout';
 
 
@@ -96,6 +101,53 @@ export const LAYOUT_TEMPLATES = [
                 <div className={cn("w-full h-1/2 border-x-4 border-b-4", isActive ? "border-brand-300" : "border-slate-300")} />
             </div>
         ),
-        Renderer: BoxedEleganceRenderer 
-    }
+        Renderer: MahalArchRenderer 
+    },
+    { 
+        id: 'template21', name: 'Royal Silk', icon: <Table size={14} />, 
+        Preview: ({ isActive }) => (
+            <div className="w-full h-full flex flex-col">
+                <div className={cn("w-full h-[40%]", isActive ? "bg-brand-200" : "bg-slate-300")} style={{ borderRadius: '0 0 100% 0' }} />
+            </div>
+        ),
+        Renderer: RoyalSilkRenderer
+    },
+    { 
+        id: 'template22', name: 'Vedic Pillars', icon: <Table size={14} />, 
+        Preview: ({ isActive }) => (
+            <div className="w-full h-full flex justify-between px-1 py-2">
+                <div className={cn("w-1 h-full", isActive ? "bg-brand-300" : "bg-slate-300")} />
+                <div className="flex-1 flex flex-col items-center gap-1 pt-2">
+                    <div className="w-8 h-8 rounded-full bg-slate-200" />
+                    <div className="w-12 h-1 bg-slate-300 rounded-full" />
+                </div>
+                <div className={cn("w-1 h-full", isActive ? "bg-brand-300" : "bg-slate-300")} />
+            </div>
+        ),
+        Renderer: VedicPillarsRenderer
+    },
+    { 
+        id: 'template23', name: 'Rajwada', icon: <Table size={14} />, 
+        Preview: ({ isActive }) => (
+            <div className="w-full h-full relative p-1">
+                <div className={cn("absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2", isActive ? "border-brand-300" : "border-slate-300")} />
+                <div className={cn("absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2", isActive ? "border-brand-300" : "border-slate-300")} />
+                <div className="w-full h-full flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full bg-slate-100 border border-slate-200" />
+                </div>
+            </div>
+        ),
+        Renderer: RajwadaRenderer
+    },
+    { 
+        id: 'template24', name: 'Divine Mandala', icon: <Table size={14} />, 
+        Preview: ({ isActive }) => (
+            <div className="w-full h-full flex flex-col items-center relative overflow-hidden">
+                <div className={cn("absolute -top-4 w-20 h-20 rounded-full opacity-20 border-2 border-dashed", isActive ? "border-brand-500" : "border-slate-500")} />
+                <div className="mt-8 w-10 h-1 bg-slate-300 rounded-full" />
+                <div className="mt-1 w-6 h-6 bg-slate-200 rounded-full" />
+            </div>
+        ),
+        Renderer: DivineMandalaRenderer
+    },
 ];

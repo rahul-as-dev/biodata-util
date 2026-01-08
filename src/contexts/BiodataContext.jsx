@@ -29,7 +29,6 @@ const initialBiodataState = {
                 { id: uuidv4(), label: 'Date of Birth', value: '5 January 1995', type: 'date', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Place of Birth', value: 'New Delhi', type: 'text', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Rashi', value: 'Tula (Libra)', type: 'text', enabled: true, showLabel: true },
-                { id: uuidv4(), label: 'Nakshatra', value: 'Rohini', type: 'text', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Complexion', value: 'Very Fair', type: 'text', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Height', value: '5 ft 5 in', type: 'text', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Education', value: '- MBBS (AIIMS)\n- MD (General Medicine)', type: 'textarea', enabled: true, showLabel: true },
@@ -64,6 +63,7 @@ const initialBiodataState = {
         fontFamily: 'serif',
         imagePlacement: 'right',
         imageShape: 'circle',
+        textColor: '#000000'
     }
 };
 

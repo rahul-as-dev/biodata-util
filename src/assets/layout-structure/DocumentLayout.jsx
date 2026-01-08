@@ -17,6 +17,12 @@ import ModernCardsRenderer from './ModernCardsRenderer';
 import MinimalistLineRenderer from './MinimalistLineRenderer';
 import LeftStripRenderer from './LeftStripRenderer';
 import BoxedEleganceRenderer from './BoxedEleganceRenderer';
+import MahalArchRenderer from './MahalArchRenderer';
+import RoyalSilkRenderer from './RoyalSilkRenderer';
+import VedicPillarsRenderer from './VedicPillarsRenderer';
+import RajwadaRenderer from './RajwadaRenderer';
+import DivineMandalaRenderer from './DivineMandalaRenderer';
+
 
 // Standardizes how section titles and fields look across most templates
 export const SectionBlock = ({ section, styles, isGrid = false, isTimeline = false }) => (
@@ -28,20 +34,20 @@ export const SectionBlock = ({ section, styles, isGrid = false, isTimeline = fal
             <h2 
                 className="text-xs font-bold uppercase tracking-widest inline-block border-b-2 pb-1"
                 style={{ 
-                    color: styles.primaryColor, 
+                    color: styles.primaryColor,
                     borderColor: `${styles.primaryColor}60`
                 }}
             >
                 {section.title}
             </h2>
         </div>
-        <div className={"flex flex-col space-y-1.5" + (isTimeline ? " pl-6 border-l-2 ml-1.5" : "")} style={{ borderColor: isTimeline ? `${styles.primaryColor}20` : 'transparent' }}>
+        <div className={"flex flex-col space-y-1.5" + (isTimeline ? " pl-6 border-l-2 ml-1.5" : "")} style={{ borderColor: isTimeline ? `${styles.primaryColor}20` : 'transparent', color: styles.textColor }}>
             {section.fields.map(f => f.enabled && (
-                <div key={f.id} className="flex items-baseline text-sm">
-                    <span className="w-1/3 text-slate-500 text-[10px] font-bold uppercase tracking-wide shrink-0">
+                <div key={f.id} className="flex items-baseline text-sm" style={{ color: styles.textColor }}>
+                    <span className="w-1/3 text-[10px] font-bold uppercase tracking-wide shrink-0" style={{ color: styles.textColor }}>
                         {f.showLabel ? f.label : ''}
                     </span>
-                    <span className="w-2/3 font-medium text-slate-900 break-words whitespace-pre-wrap">
+                    <span className="w-2/3 font-medium break-words whitespace-pre-wrap" style={{ color: styles.textColor }}>
                         {f.value}
                     </span>
                 </div>
@@ -68,5 +74,10 @@ export {
     ModernCardsRenderer,
     MinimalistLineRenderer,
     LeftStripRenderer,
-    BoxedEleganceRenderer
+    BoxedEleganceRenderer,
+    MahalArchRenderer,
+    RoyalSilkRenderer,
+    VedicPillarsRenderer,
+    RajwadaRenderer,
+    DivineMandalaRenderer
 };

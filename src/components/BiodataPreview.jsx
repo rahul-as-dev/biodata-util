@@ -9,11 +9,11 @@ const BiodataPreview = ({ biodata }) => {
     // 1. Resolve Theme Config (for background assets like frames/flowers)
     const themeConfig = getThemeConfig(customizations.themeId);
     
-    // 2. Resolve Styles (The missing link)
     // We prioritize User Selection -> Theme Default -> System Default
     const styles = {
         primaryColor: customizations.primaryColor || themeConfig.styles.primaryColor || '#e11d48',
         backgroundColor: customizations.backgroundColor || '#ffffff',
+        textColor: customizations.textColor || '#000000',
         fontClass: customizations.fontFamily === 'serif' ? 'font-serif' : customizations.fontFamily === 'monospace' ? 'font-mono' : 'font-sans'
     };
 
@@ -27,7 +27,8 @@ const BiodataPreview = ({ biodata }) => {
             style={{
                 width: '210mm',   
                 height: '297mm',
-                backgroundColor: styles.backgroundColor, // Applies user background color
+                backgroundColor: styles.backgroundColor,
+                textColor: styles.textColor,
                 color: '#334155',
                 fontSize: '11pt',
                 lineHeight: '1.6'

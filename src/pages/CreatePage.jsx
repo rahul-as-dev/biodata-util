@@ -15,7 +15,7 @@ import {
     ZoomIn, ZoomOut, Maximize, Minimize2, Maximize2, Download
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { RoyalDiya as PreviewTheme } from '../assets/background-theme/RoyalDiya';
+import { EnchantedFireflies as PreviewTheme } from '../assets/background-theme/EnchantedFireflies';
 import { DottedEditorTheme as EditorTheme } from '../assets/background-theme/DottedEditorTheme';
 
 // --- FieldEditor ---

@@ -4,6 +4,8 @@ import { THEMES } from '../../utils/themeRegistry';
 import { LAYOUT_TEMPLATES } from '../../utils/templateRegistry';
 import { cn } from '../../utils/cn';
 import { Type, Palette, Check, Image as ImageIcon, Columns } from 'lucide-react';
+import ColorPicker from '../common/ColorPicker';
+import { lightToMediumColors, mediumToDarkColors, textColorsDark, textColorsLight } from '../../config/constants';
 
 const Sidebar = () => {
     const { biodata, updateBiodata } = useBiodata();
@@ -16,8 +18,8 @@ const Sidebar = () => {
         <div className="space-y-6 pb-20">
             {/* 3. Paper Color */}
             <Section title="Background Color" icon={<Palette size={18} />}>
-                 <div className="flex flex-wrap gap-3">
-                    {['#ffffff', '#fff1f2', '#fdf2f8', '#fffbeb', '#f0f9ff', '#f5f5f4'].map(color => (
+                <div className="flex flex-wrap gap-3 items-center">
+                    {lightToMediumColors.slice(0, 10).map(color => (
                         <button
                             key={color}
                             onClick={() => updateCustomization('backgroundColor', color)}
@@ -31,6 +33,40 @@ const Sidebar = () => {
                             {biodata.customizations.backgroundColor === color && <Check size={14} className="text-slate-900/60" />}
                         </button>
                     ))}
+                    {/* Custom Color Picker */}
+                    <ColorPicker
+                        value={biodata.customizations.backgroundColor}
+                        onChange={color => updateCustomization('backgroundColor', color)}
+                        ColorPicker={lightToMediumColors}
+                        className={"ml-2"}
+                    />
+                </div>
+            </Section>
+
+            {/* 3. Text Color */}
+            <Section title="Text Color" icon={<Palette size={18} />}>
+                <div className="flex flex-wrap gap-3 items-center">
+                    {textColorsDark.slice(0,10).map(color => (
+                        <button
+                            key={color}
+                            onClick={() => updateCustomization('textColor', color)}
+                            className={cn(
+                                "w-9 h-9 rounded-full border shadow-sm flex items-center justify-center transition-all hover:scale-110 relative",
+                                biodata.customizations.textColor === color ? "border-brand-500 ring-2 ring-brand-200 dark:ring-brand-900 scale-110" : "border-slate-200 dark:border-slate-600"
+                            )}
+                            style={{ backgroundColor: color }}
+                            title={color}
+                        >
+                            {biodata.customizations.textColor === color && <Check size={14} className="text-slate-900/60" />}
+                        </button>
+                    ))}
+                    {/* Custom Color Picker */}
+                    <ColorPicker
+                        value={biodata.customizations.textColor}
+                        onChange={color => updateCustomization('textColor', color)}
+                        ColorPicker={textColorsDark}
+                        className={"ml-2"}
+                    />
                 </div>
             </Section>
 
@@ -51,8 +87,8 @@ const Sidebar = () => {
                     </div>
                     <div>
                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block uppercase">Primary Color</label>
-                        <div className="flex flex-wrap gap-2">
-                            {['#000000', '#e11d48', '#be123c', '#b45309', '#15803d', '#1e40af', '#6b21a8'].map(color => (
+                        <div className="flex flex-wrap gap-3 items-center">
+                            {mediumToDarkColors.slice(0,10).map(color => (
                                 <button
                                     key={color}
                                     onClick={() => updateCustomization('primaryColor', color)}
@@ -65,12 +101,16 @@ const Sidebar = () => {
                                     style={{ backgroundColor: color }}
                                 />
                             ))}
+                            <ColorPicker
+                                value={biodata.customizations.primaryColor}
+                                onChange={color => updateCustomization('primaryColor', color)}
+                                className={"ml-2"}
+                            />
                         </div>
                     </div>
                 </div>
             </Section>
             
-            {/* 1. LAYOUT STRUCTURE */}
             {/* 1. LAYOUT STRUCTURE (Updated for Scroll & Compactness) */}
             <Section title="Layout Structure" icon={<Columns size={18} />}>
                 {/* Scrollable Container */}

@@ -9,7 +9,7 @@ const MahalArchRenderer = ({ biodata, styles }) => {
     return (
         <div className="relative z-10 h-full p-6 flex flex-col">
             {/* The Arch Border */}
-            <div className="flex-1 border-[4px] relative flex flex-col" style={{ borderColor: styles.primaryColor, borderRadius: '150px 150px 0 0' }}>
+            <div className="flex-1 border-[4px] relative flex flex-col mt-4" style={{ borderColor: styles.primaryColor, borderRadius: '150px 150px 0 0' }}>
 
                 {/* Decorative Top Keystone */}
                 <div className="absolute -top-6 left-1/2 -translate-x-1/2 w-12 h-12 rotate-45 border-4 bg-white z-20" style={{ borderColor: styles.primaryColor }}></div>
@@ -38,9 +38,9 @@ const MahalArchRenderer = ({ biodata, styles }) => {
                             </h3>
                             <div className="space-y-1 mt-2">
                                 {s.fields.map(f => f.enabled && (
-                                    <div key={f.id} className="text-sm flex flex-col">
-                                        <span className="text-[10px] text-slate-400 font-bold uppercase">{f.label}</span>
-                                        <span className="font-medium text-slate-900">{f.value}</span>
+                                    <div key={f.id} className="text-sm flex flex-col" style={{ color: styles.textColor }}>
+                                        <span className="text-[10px] font-bold uppercase" style={{ color: styles.textColor }}>{f.label}</span>
+                                        <span className="font-medium" style={{ color: styles.textColor }}>{f.value}</span>
                                     </div>
                                 ))}
                             </div>
