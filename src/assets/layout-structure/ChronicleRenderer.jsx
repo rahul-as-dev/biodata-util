@@ -9,6 +9,7 @@ const ChronicleRenderer = ({ biodata, styles }) => {
         <div className="relative z-10 h-full p-10 pt-14 flex flex-col">
             <div className="text-center mb-10">
                 {photo && <img src={photo} className="w-28 h-28 rounded-full object-cover mx-auto mb-4 border-4 border-white shadow-lg" alt="Profile" />}
+                {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                 {header.enabled && <h1 className="text-3xl font-serif font-bold" style={{ color: styles.primaryColor }}>{header.text}</h1>}
                 {overview?.enabled && overview.text && <p className="text-slate-500 text-sm mt-2">{overview.text}</p>}
             </div>

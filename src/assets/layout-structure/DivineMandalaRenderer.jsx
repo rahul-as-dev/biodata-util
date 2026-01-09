@@ -23,8 +23,7 @@ const DivineMandalaRenderer = ({ biodata, styles }) => {
                 )}
                 {header.enabled && (
                     <>
-                        {header.icon && <img src={header.icon} className="h-12 w-12 mx-auto mb-3" alt="Icon" />}
-                        <h1 className="text-4xl font-bold uppercase tracking-widest text-slate-800">{header.text}</h1>
+                        {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }} />}                        <h1 className="text-4xl font-bold uppercase tracking-widest text-slate-800">{header.text}</h1>
                     </>
                 )}
                 {overview?.enabled && overview.text && (

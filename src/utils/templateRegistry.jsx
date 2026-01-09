@@ -30,7 +30,8 @@ import {
     RoyalSilkRenderer,
     VedicPillarsRenderer,
     RajwadaRenderer,
-    DivineMandalaRenderer
+    DivineMandalaRenderer,
+    PalaceRenderer
 } from '../assets/layout-structure/DocumentLayout';
 
 
@@ -150,4 +151,16 @@ export const LAYOUT_TEMPLATES = [
         ),
         Renderer: DivineMandalaRenderer
     },
+    {
+        id: 'template26',
+        name: 'Palace Renderer',
+        icon: <Sun size={14} />,
+        Preview: ({ isActive }) => (
+            <div className="w-full h-full flex items-center justify-center relative overflow-hidden">
+                <div className={cn("absolute w-24 h-24 rounded-full border opacity-30", isActive ? "border-brand-500" : "border-slate-400")} />
+                <div className="w-12 h-1 bg-slate-300 z-10" />
+            </div>
+        ),
+        Renderer: PalaceRenderer
+    }
 ];

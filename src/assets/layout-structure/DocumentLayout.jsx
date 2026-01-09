@@ -22,6 +22,7 @@ import RoyalSilkRenderer from './RoyalSilkRenderer';
 import VedicPillarsRenderer from './VedicPillarsRenderer';
 import RajwadaRenderer from './RajwadaRenderer';
 import DivineMandalaRenderer from './DivineMandalaRenderer';
+import { PalaceRenderer } from './PalaceRenderer';
 
 
 // Standardizes how section titles and fields look across most templates
@@ -31,23 +32,24 @@ export const SectionBlock = ({ section, styles, isGrid = false, isTimeline = fal
             {isTimeline && (
                 <div className="w-3 h-3 rounded-full shrink-0 outline outline-2 outline-offset-2" style={{ backgroundColor: styles.primaryColor, outlineColor: styles.primaryColor }}></div>
             )}
-            <h2 
+            <div
                 className="text-xs font-bold uppercase tracking-widest inline-block border-b-2 pb-1"
                 style={{ 
                     color: styles.primaryColor,
-                    borderColor: `${styles.primaryColor}60`
+                    borderColor: `${styles.primaryColor}60`,
+                    fontSize: `calc(${styles.fontSize} + 3px)`
                 }}
             >
                 {section.title}
-            </h2>
+            </div>
         </div>
-        <div className={"flex flex-col space-y-1.5" + (isTimeline ? " pl-6 border-l-2 ml-1.5" : "")} style={{ borderColor: isTimeline ? `${styles.primaryColor}20` : 'transparent', color: styles.textColor }}>
+        <div className={"flex flex-col space-y-1.5" + (isTimeline ? " pl-6 border-l-2 ml-1.5" : "")} style={{ borderColor: isTimeline ? `${styles.primaryColor}20` : 'transparent', color: styles.textColor, fontSize: styles.fontSize }}>
             {section.fields.map(f => f.enabled && (
-                <div key={f.id} className="flex items-baseline text-sm" style={{ color: styles.textColor }}>
-                    <span className="w-1/3 text-[10px] font-bold uppercase tracking-wide shrink-0" style={{ color: styles.textColor }}>
+                <div key={f.id} className="flex items-baseline text-sm" style={{ color: styles.textColor, fontSize: styles.fontSize }}>
+                    <span className="w-1/3 text-[10px] font-bold uppercase tracking-wide shrink-0" style={{ color: styles.textColor, fontSize: `calc(${styles.fontSize} - 2px)` }}>
                         {f.showLabel ? f.label : ''}
                     </span>
-                    <span className="w-2/3 font-medium break-words whitespace-pre-wrap" style={{ color: styles.textColor }}>
+                    <span className="w-2/3 font-medium break-words whitespace-pre-wrap" style={{ color: styles.textColor, fontSize: styles.fontSize }}>
                         {f.value}
                     </span>
                 </div>
@@ -79,5 +81,6 @@ export {
     RoyalSilkRenderer,
     VedicPillarsRenderer,
     RajwadaRenderer,
-    DivineMandalaRenderer
+    DivineMandalaRenderer,
+    PalaceRenderer
 };

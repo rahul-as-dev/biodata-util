@@ -1,3 +1,4 @@
+import { OmIcon1 } from "../assets/SVGAssets";
 export const lightToMediumColors = [
     "#FFFFFF", // White
     "#F5F5F5", // White Smoke
@@ -87,3 +88,14 @@ export const textColorsDark = [
     "#0F172A", // Navy / Slate 900
     "#334155", // Slate 700
 ];
+
+export const HEADER_ICONS = [
+    {
+        Icon: undefined,
+        text: '',
+    },
+    {
+        Icon: OmIcon1,
+        text: '|| Shree Ganesha ||'
+    }
+]

@@ -9,8 +9,7 @@ const ClassicFrameRenderer = ({ biodata, styles }) => {
         <div className="relative z-10 h-full p-6 flex flex-col">
             <div className="flex-1 border-[3px] p-1" style={{ borderColor: styles.primaryColor }}>
                 <div className="h-full w-full border border-dashed p-8 flex flex-col items-center" style={{ borderColor: styles.primaryColor }}>
-                    {header.enabled && <div className="text-center mb-8">{header.icon && <img src={header.icon} className="h-12 w-12 mx-auto mb-2" alt="Icon" />}<h1 className="text-3xl font-serif font-bold uppercase tracking-widest text-slate-800">{header.text}</h1><div className="w-16 h-1 mx-auto mt-3" style={{ backgroundColor: styles.primaryColor }} /></div>}
-                    <div className="flex gap-10 w-full flex-1">
+                    {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }} />}                    <div className="flex gap-10 w-full flex-1">
                         <div className="w-1/3 flex flex-col items-center text-center">
                             {photo && <div className="p-1 border rounded-full mb-6" style={{ borderColor: styles.primaryColor }}><img src={photo} className="w-40 h-40 rounded-full object-cover" alt="Profile" /></div>}
                             {overview?.enabled && overview.text && <div className="bg-slate-50/50 p-4 rounded-lg border border-slate-200/50"><p className="text-sm italic text-slate-600 font-serif leading-relaxed">"{overview.text}"</p></div>}

@@ -11,6 +11,7 @@ const BoxedEleganceRenderer = ({ biodata, styles }) => {
                 {/* Title Box intersecting top border */}
                 {header.enabled && (
                     <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-white px-8 py-2">
+                        {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                         <h1 className="text-3xl font-serif font-bold uppercase tracking-widest text-center whitespace-nowrap" style={{ color: styles.primaryColor }}>
                             {header.text}
                         </h1>

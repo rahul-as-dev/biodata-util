@@ -8,14 +8,12 @@ const STORAGE_KEY = 'vivahpatra_biodata';
 
 const initialBiodataState = {
     header: {
-        icon: '', 
-        text: '|| Shree Ganesh ||',
+        icon: undefined, 
+        text: '',
         enabled: true,
     },
-    // --- NEW: Overview Field ---
     overview: {
         enabled: true,
-        // title: 'About Me',
         text: 'Believing in family values and modern thinking. Looking for a partner who is understanding and caring.'
     },
     photo: null, 
@@ -57,13 +55,14 @@ const initialBiodataState = {
     ],
     template: 'template1',
     customizations: {
-        themeId: 'minimal', // <--- NEW: Controls the decoration asset
-        backgroundColor: '#ffffff', // <--- NEW: Controls the PDF paper color
+        themeId: 'minimal',
+        backgroundColor: '#ffffff',
         primaryColor: '#e11d48',
         fontFamily: 'serif',
         imagePlacement: 'right',
         imageShape: 'circle',
-        textColor: '#000000'
+        textColor: '#000000',
+        fontSize: '12px' // ['2px' - '98px']
     }
 };
 

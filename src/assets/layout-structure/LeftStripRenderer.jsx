@@ -14,6 +14,7 @@ const LeftStripRenderer = ({ biodata, styles }) => {
             <div className="flex-1 p-10 pt-14">
                 <div className="flex items-start justify-between mb-12">
                     <div className="flex-1">
+                        {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                         {header.enabled && (
                             <h1 className="text-5xl font-bold uppercase leading-none text-slate-900 mb-6">
                                 {header.text.split(' ').map((word, i) => (

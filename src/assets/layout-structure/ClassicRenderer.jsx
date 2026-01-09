@@ -10,7 +10,7 @@ const ClassicRenderer = ({ biodata, styles, themeConfig }) => {
         <div className="relative z-10 h-full flex flex-col p-[40px] pt-[60px]" style={{ paddingLeft: themeConfig.styles.paddingHorizontal, paddingRight: themeConfig.styles.paddingHorizontal, color: styles.textColor }}>
             {header.enabled && (
                 <div className="text-center mb-8 pb-4 border-b" style={{ borderColor: `${styles.primaryColor}40` }}>
-                    {header.icon && <img src={header.icon} className="h-16 w-16 mx-auto mb-3 object-contain" alt="Icon" />}
+                    {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                     <h1 className="text-3xl font-bold uppercase tracking-widest" style={{ color: styles.primaryColor }}>{header.text}</h1>
                 </div>
             )}

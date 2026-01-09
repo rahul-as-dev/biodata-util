@@ -12,6 +12,7 @@ const BiodataPreview = ({ biodata }) => {
     // We prioritize User Selection -> Theme Default -> System Default
     const styles = {
         primaryColor: customizations.primaryColor || themeConfig.styles.primaryColor || '#e11d48',
+        fontSize: customizations.fontSize || '12px',
         backgroundColor: customizations.backgroundColor || '#ffffff',
         textColor: customizations.textColor || '#000000',
         fontClass: customizations.fontFamily === 'serif' ? 'font-serif' : customizations.fontFamily === 'monospace' ? 'font-mono' : 'font-sans'
@@ -30,7 +31,7 @@ const BiodataPreview = ({ biodata }) => {
                 backgroundColor: styles.backgroundColor,
                 textColor: styles.textColor,
                 color: '#334155',
-                fontSize: '11pt',
+                fontSize: styles.fontSize,
                 lineHeight: '1.6'
             }}
         >
@@ -48,6 +49,7 @@ const BiodataPreview = ({ biodata }) => {
             )}
 
             {/* 4. Pass computed styles to the Template Renderer */}
+            {biodata.header.icon && <biodata.header.icon className="h-26 w-26 mx-auto -mb-2.5 object-contain border-b-4" style={{ color: styles.primaryColor }}/>}
             <ActiveRenderer 
                 biodata={biodata} 
                 styles={styles} 

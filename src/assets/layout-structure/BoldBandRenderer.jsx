@@ -9,6 +9,7 @@ const BoldBandRenderer = ({ biodata, styles }) => {
         <div className="relative z-10 h-full flex flex-col pt-12">
             <div className="w-full py-8 px-10 flex items-center justify-between mb-8 shadow-sm" style={{ backgroundColor: styles.primaryColor }}>
                 <div className="text-white">
+                    {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                     {header.enabled && <h1 className="text-4xl font-bold uppercase tracking-wide">{header.text}</h1>}
                     {overview?.enabled && overview.text && <p className="text-white/80 text-sm mt-2 max-w-lg">{overview.text}</p>}
                 </div>

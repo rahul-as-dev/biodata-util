@@ -12,6 +12,7 @@ const DiagonalRenderer = ({ biodata, styles }) => {
                 <div className="flex gap-8 items-center mb-12">
                     {photo && <div className="p-1 bg-white rounded-full shadow-xl"><img src={photo} className="w-40 h-40 rounded-full object-cover" alt="Profile" /></div>}
                     <div className="text-white flex-1">
+                        {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
                         {header.enabled && <h1 className="text-4xl font-bold uppercase tracking-widest drop-shadow-md">{header.text}</h1>}
                         {overview?.enabled && overview.text && <p className="mt-2 text-white/90 font-medium italic opacity-90 border-l-4 border-white/30 pl-3">{overview.text}</p>}
                     </div>
