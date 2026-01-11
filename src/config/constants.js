@@ -1,4 +1,4 @@
-import { OmIcon1 } from "../assets/SVGAssets";
+import { DashedFrame, ElegantBorder, IndianArch, MandalaWatermark, OmIcon1, GaneshaSimple1Component, GaneshaSimple2Component, GaneshaSimple3Component, OmIcon2Component, Swastika1Component, SimpleOm1Component } from "../assets/SVGAssets";
 export const lightToMediumColors = [
     "#FFFFFF", // White
     "#F5F5F5", // White Smoke
@@ -95,7 +95,31 @@ export const HEADER_ICONS = [
         text: '',
     },
     {
-        Icon: OmIcon1,
-        text: '|| Shree Ganesha ||'
+        Icon: SimpleOm1Component, //ॐ नमो नारायणाय — Om Namo Narayanaya
+        text: '|| ॐ नमो नारायणाय ||'
+    },
+    {
+        Icon: OmIcon1, //॥ मंगलम् ॥ — ॥ Mangalam ॥
+        text: '|| मंगलम् ||'
+    },
+    {
+        Icon: OmIcon2Component, //शुभे शोभन मंगलम् — Auspicious and beautiful beginnings
+        text: '|| शुभे शोभन मंगलम् ||'
+    },
+    {
+        Icon: GaneshaSimple1Component, //ॐ श्री गणेशाय नमः — Om Shri Ganeshaya Namah
+        text: '|| ॐ श्री गणेशाय नमः ||'
+    },
+    {
+        Icon: GaneshaSimple2Component, //ॐ गं गणपतये नमः — Om Gam Ganapataye Namah
+        text: '|| ॐ गं गणपतये नमः ||'
+    },
+    {
+        Icon: GaneshaSimple3Component, //श्री गणेशाय नमः — Shri Ganeshaya Namah
+        text: '|| श्री गणेशाय नमः ||'
+    },
+    {
+        Icon: Swastika1Component, //शुभ लाभ — Shubh Labh
+        text: '|| शुभ लाभ ||'
     }
 ]

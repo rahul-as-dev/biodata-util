@@ -45,13 +45,22 @@ const initialBiodataState = {
         },
         {
             id: 'contact',
-            title: 'CONTACT DETAILS',
+            title: 'PATERNAL CONTACT DETAILS',
             enabled: true,
             fields: [
                 { id: uuidv4(), label: 'Contact', value: '+91 98765 43210', type: 'text', enabled: true, showLabel: true },
                 { id: uuidv4(), label: 'Address', value: '123, Green Park, New Delhi', type: 'textarea', enabled: true, showLabel: true },
             ],
         },
+        {
+            id: 'contact',
+            title: 'MATERNAL CONTACT DETAILS',
+            enabled: true,
+            fields: [
+                { id: uuidv4(), label: 'Contact', value: '+91 98765 43210', type: 'text', enabled: true, showLabel: true },
+                { id: uuidv4(), label: 'Address', value: '123, Green Park, New Delhi', type: 'textarea', enabled: true, showLabel: true },
+            ],
+        }
     ],
     template: 'template1',
     customizations: {

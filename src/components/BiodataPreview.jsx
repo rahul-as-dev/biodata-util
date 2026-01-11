@@ -49,7 +49,7 @@ const BiodataPreview = ({ biodata }) => {
             )}
 
             {/* 4. Pass computed styles to the Template Renderer */}
-            {biodata.header.icon && <biodata.header.icon className="h-26 w-26 mx-auto -mb-2.5 object-contain border-b-4" style={{ color: styles.primaryColor }}/>}
+            {/* {biodata.header.icon && <biodata.header.icon className="h-26 w-26 mx-auto -mb-2.5 object-contain border-b-4" style={{ color: styles.primaryColor }}/>} */}
             <ActiveRenderer 
                 biodata={biodata} 
                 styles={styles} 

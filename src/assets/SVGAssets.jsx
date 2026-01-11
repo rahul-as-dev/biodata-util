@@ -1,4 +1,11 @@
 import React from 'react';
+import { cn } from '../utils/cn';
+import OmIcon2 from './svg-assets/OmIcon2.svg?react';
+import SimpleGanesha1 from './svg-assets/SimpleGanesha1.svg?react';
+import SimpleGanesha2 from './svg-assets/SimpleGanesha2.svg?react';
+import SimpleGanesha3 from './svg-assets/SimpleGanesha3.svg?react';
+import Swastika1 from './svg-assets/Swastika1.svg?react';
+import SimpleOm1 from './svg-assets/SimpleOm1.svg?react';
 
 // --- PRIMITIVES (Paths) ---
 const PATHS = {
@@ -7,6 +14,13 @@ const PATHS = {
     mandala: "M50 0 L60 20 L80 10 L75 35 L100 50 L75 65 L80 90 L60 80 L50 100 L40 80 L20 90 L25 65 L0 50 L25 35 L20 10 L40 20 Z",
     ganesha: "M50 20 C 65 20 75 35 70 50 C 65 65 55 60 55 70 L 60 80 L 40 80 L 45 70 C 45 60 35 65 30 50 C 25 35 35 20 50 20 M50 25 V 45"
 };
+
+const SvgWrapper = ({ Component, className, style }) => (
+    <div className={className} style={style}>
+        {/* The SVG component inherits the current text color if it uses fill="currentColor" */}
+        <Component className="w-full h-full text-current" />
+    </div>
+);
 
 // --- 1. FULL PAGE BORDERS ---
 
@@ -99,10 +113,10 @@ export const OrnateDivider = ({ className, style }) => (
 );
 
 export const OmIcon1 = ({ className, style }) => (
-    <svg viewBox='0 0 50 50' width={600} height={600} preserveAspectRatio="xMidYMid meet" className={className} style={style}>
+    <svg viewBox='0 0 500 500' preserveAspectRatio="xMidYMid meet" className={className} style={style}>
         <g className="layer">
             <title>Layer 1</title>
-            <g id="svg_1" transform="scale(0.1)">
+            <g id="svg_1">
                 <g id="svg_2">
                     <path d="m107.69,324.14c-2.04,0 -3.69,1.65 -3.69,3.69c0,2.04 1.65,3.69 3.69,3.69c2.04,0 3.69,-1.65 3.69,-3.69c0,-2.04 -1.65,-3.69 -3.69,-3.69z" fill="currentColor" id="svg_3" />
                     <path d="m91.23,287.34c-2.04,0 -3.69,1.65 -3.69,3.69c0,2.04 1.65,3.69 3.69,3.69c2.04,0 3.69,-1.65 3.69,-3.69c0,-2.04 -1.65,-3.69 -3.69,-3.69z" fill="currentColor" id="svg_4" />
@@ -127,4 +141,28 @@ export const OmIcon1 = ({ className, style }) => (
             </g>
         </g>
     </svg>
+);
+
+export const OmIcon2Component = ({ className, style }) => (
+    <SvgWrapper Component={OmIcon2} className={className} style={style} />
+);
+
+export const GaneshaSimple1Component = ({ className, style }) => (
+    <SvgWrapper Component={SimpleGanesha1} className={className} style={style} />
+);
+
+export const GaneshaSimple2Component = ({ className, style }) => (
+    <SvgWrapper Component={SimpleGanesha2} className={className} style={style} />
+);
+
+export const GaneshaSimple3Component = ({ className, style }) => (
+    <SvgWrapper Component={SimpleGanesha3} className={className} style={style} />
+);
+
+export const Swastika1Component = ({ className, style }) => (
+    <SvgWrapper Component={Swastika1} className={className} style={style} />
+);
+
+export const SimpleOm1Component = ({ className, style }) => (
+    <SvgWrapper Component={SimpleOm1} className={className} style={style} />
 );

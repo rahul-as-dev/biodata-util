@@ -127,19 +127,19 @@ const Sidebar = () => {
                     </div>
                 </div>
             </Section>
-            
+
             {/* Header Icon Catalouge */}
             <Section title="Header Icon">
                 {/* Scrollable Container */}
-                <div className="max-h-[320px] overflow-y-auto pr-1 -mr-2 custom-scrollbar">
+                <div className="max-h-40 overflow-y-auto pr-1 -mr-2 custom-scrollbar">
                     {/* Compact Grid */}
-                    <div className="grid grid-cols-4 gap-2">
-                        {HEADER_ICONS.map(( {Icon, text} ) => {
+                    <div className="grid grid-cols-6 gap-4">
+                        {HEADER_ICONS.map(({ Icon, text }, index) => {
                             const isActive = biodata.header.icon === Icon;
 
                             return (
                                 <button
-                                    key={text.length}
+                                    key={index}
                                     onClick={() =>
                                         updateBiodata(d => {
                                             d.header.icon = Icon;
@@ -157,7 +157,7 @@ const Sidebar = () => {
                                     {/* Icon */}
                                     {Icon && <Icon
                                         className={cn(
-                                            "w-6 h-6 transition-colors",
+                                            "w-22 h-22 transition-colors",
                                             isActive
                                                 ? "text-brand-600 dark:text-brand-400"
                                                 : "text-slate-500 dark:text-slate-400"

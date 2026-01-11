@@ -9,13 +9,13 @@ const ClassicRenderer = ({ biodata, styles, themeConfig }) => {
     return (
         <div className="relative z-10 h-full flex flex-col p-[40px] pt-[60px]" style={{ paddingLeft: themeConfig.styles.paddingHorizontal, paddingRight: themeConfig.styles.paddingHorizontal, color: styles.textColor }}>
             {header.enabled && (
-                <div className="text-center mb-8 pb-4 border-b" style={{ borderColor: `${styles.primaryColor}40` }}>
-                    {header.icon && <header.icon className="h-26 w-26 mx-auto -mt-10 -mb-2.5 object-contain" style={{ color: styles.primaryColor }}/>}
-                    <h1 className="text-3xl font-bold uppercase tracking-widest" style={{ color: styles.primaryColor }}>{header.text}</h1>
+                <div className="text-center mb-8 pb-1 border-b-2" style={{ borderColor: `${styles.primaryColor}` }}>
+                    {header.icon && <header.icon className="h-20 w-20 mx-auto -mt-10 -mb-0.5 object-contain" style={{ color: styles.primaryColor }}/>}
+                    <h1 className="text-xl font-bold uppercase tracking-wide" style={{ color: styles.primaryColor }}>{header.text}</h1>
                 </div>
             )}
             {photo && customizations.imagePlacement === 'above' && (
-                <div className="flex justify-center mb-8"><img src={photo} className="w-40 h-40 object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '3px', borderRadius: customizations.imageShape === 'circle' ? '50%' : '6px' }} alt="Profile" /></div>
+                <div className="flex justify-center mb-2 -mt-3"><img src={photo} className="w-40 h-40 object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '3px', borderRadius: customizations.imageShape === 'circle' ? '50%' : '6px' }} alt="Profile" /></div>
             )}
             {overview?.enabled && overview.text && (
                 <div className="mb-8 text-center px-4"><p className="text-sm italic" style={{ color: styles.textColor }}>{overview.text}</p></div>
