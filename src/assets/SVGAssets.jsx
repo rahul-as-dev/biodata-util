@@ -15,12 +15,32 @@ const PATHS = {
     ganesha: "M50 20 C 65 20 75 35 70 50 C 65 65 55 60 55 70 L 60 80 L 40 80 L 45 70 C 45 60 35 65 30 50 C 25 35 35 20 50 20 M50 25 V 45"
 };
 
-const SvgWrapper = ({ Component, className, style }) => (
-    <div className={className} style={style}>
-        {/* The SVG component inherits the current text color if it uses fill="currentColor" */}
-        <Component className="w-full h-full text-current" />
-    </div>
-);
+// --- HOC for Normalization ---
+/**
+ * withNormalization HOC
+ * Wraps an SVG component to ensure consistent 500x500 aspect ratio and centering.
+ * This allows renderers to control the size via className (e.g., h-20 w-20)
+ * while maintaining internal alignment.
+ */
+const withNormalization = (Component) => {
+    return ({ className, style, ...props }) => (
+        <div
+            className={cn("flex items-center justify-center overflow-hidden", className)}
+            style={{ ...style, aspectRatio: '1/1' }}
+        >
+            <Component
+                className="w-full h-full object-contain text-current"
+                {...props}
+            />
+        </div>
+    );
+};
+
+// Keeping SvgWrapper for backward compatibility or simple cases, but mapping it to normalization logic
+const SvgWrapper = ({ Component, className, style }) => {
+    const Normalized = withNormalization(Component);
+    return <Normalized className={className} style={style} />;
+};
 
 // --- 1. FULL PAGE BORDERS ---
 
@@ -112,8 +132,9 @@ export const OrnateDivider = ({ className, style }) => (
     </svg>
 );
 
-export const OmIcon1 = ({ className, style }) => (
+const OmIcon1Base = ({ className, style }) => (
     <svg viewBox='0 0 500 500' preserveAspectRatio="xMidYMid meet" className={className} style={style}>
+        {/* ... existing SVG content ... */}
         <g className="layer">
             <title>Layer 1</title>
             <g id="svg_1">
@@ -142,6 +163,8 @@ export const OmIcon1 = ({ className, style }) => (
         </g>
     </svg>
 );
+
+export const OmIcon1Component = withNormalization(OmIcon1Base);
 
 export const OmIcon2Component = ({ className, style }) => (
     <SvgWrapper Component={OmIcon2} className={className} style={style} />

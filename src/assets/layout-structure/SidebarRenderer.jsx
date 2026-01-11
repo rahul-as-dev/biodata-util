@@ -10,15 +10,33 @@ const SidebarRenderer = ({ biodata, styles, isRight = false }) => {
     const mainSections = enabledSections.filter(s => !sidebarSectionIds.includes(s.id));
 
     return (
-        <div className={cn("relative z-10 h-full flex", isRight ? "flex-row-reverse" : "flex-row")}> 
-            <div className="w-[32%] p-8 flex flex-col gap-6 border-r border-slate-200" style={{ backgroundColor: `${styles.primaryColor}10`, borderColor: `${styles.primaryColor}20` }}>
-                {photo && ( <div className="flex justify-center mb-2"><img src={photo} className="w-40 h-40 object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '4px', borderRadius: customizations.imageShape === 'circle' ? '50%' : '6px' }} alt="Profile" /></div> )}
-                {overview?.enabled && overview.text && ( <div className="text-center"><h3 className="text-xs font-bold uppercase tracking-widest mb-2 border-b border-slate-300/50 pb-1" style={{ color: styles.primaryColor }}>{overview.title}</h3><p className="text-sm text-slate-700 italic leading-relaxed">{overview.text}</p></div> )}
-                <div className="flex-1 space-y-8">{sidebarSections.map(s => <SectionBlock key={s.id} section={s} styles={styles} />)}</div>
+        <div className={cn("relative z-10 h-full flex", isRight ? "flex-row-reverse" : "flex-row")} style={{ color: styles.textColor, fontSize: styles.fontSize }}>
+            <div className="flex flex-col border-r" style={{ width: '32%', padding: '2em', gap: '1.5em', backgroundColor: `${styles.primaryColor}08`, borderColor: `${styles.primaryColor}20` }}>
+                {photo && (
+                    <div className="flex justify-center" style={{ marginBottom: '0.5em' }}>
+                        <img src={photo} className="object-cover shadow-md" style={{ width: '10em', height: '10em', borderColor: styles.primaryColor, borderWidth: '0.25em', borderRadius: customizations.imageShape === 'circle' ? '50%' : '0.4em' }} alt="Profile" />
+                    </div>
+                )}
+                {overview?.enabled && overview.text && (
+                    <div className="text-center">
+                        <h3 className="font-bold uppercase tracking-widest border-b" style={{ fontSize: '0.75em', marginBottom: '0.5em', color: styles.primaryColor, paddingBottom: '0.25em', borderColor: `${styles.primaryColor}20` }}>{overview.title}</h3>
+                        <p className="italic leading-relaxed" style={{ fontSize: '0.875em', opacity: 0.8 }}>{overview.text}</p>
+                    </div>
+                )}
+                <div className="flex-1 flex flex-col" style={{ gap: '2em' }}>
+                    {sidebarSections.map(s => <SectionBlock key={s.id} section={s} styles={styles} />)}
+                </div>
             </div>
-            <div className="flex-1 p-10 pt-12">
-                {header.enabled && ( <div className="mb-10 flex items-center gap-4 border-b border-slate-100 pb-6"><div><h1 className="text-3xl font-bold uppercase tracking-widest leading-tight" style={{ color: styles.primaryColor }}>{header.text}</h1></div></div> )}
-                <div className="space-y-8">{mainSections.map(s => <SectionBlock key={s.id} section={s} styles={styles} />)}</div>
+            <div className="flex-1 flex flex-col" style={{ padding: '3em 1em 1em 1em' }}>
+                {header.enabled && (
+                    <div className="text-center border-b" style={{ marginBottom: '2em', paddingBottom: '0.3em', borderColor: styles.primaryColor, borderWidth: '0.15em' }}>
+                        {header.icon && <header.icon className="mx-auto" style={{ height: '6em', width: '6em', marginTop: '-3em', marginBottom: '-0.2em', color: styles.primaryColor }} />}
+                        <h1 className="font-bold uppercase tracking-wider" style={{ fontSize: '1.8em', color: styles.primaryColor }}>{header.text}</h1>
+                    </div>
+                )}
+                <div className="flex flex-col" style={{ gap: '2em' }}>
+                    {mainSections.map(s => <SectionBlock key={s.id} section={s} styles={styles} />)}
+                </div>
             </div>
         </div>
     );

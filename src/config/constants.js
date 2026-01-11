@@ -1,4 +1,4 @@
-import { DashedFrame, ElegantBorder, IndianArch, MandalaWatermark, OmIcon1, GaneshaSimple1Component, GaneshaSimple2Component, GaneshaSimple3Component, OmIcon2Component, Swastika1Component, SimpleOm1Component } from "../assets/SVGAssets";
+import { DashedFrame, ElegantBorder, IndianArch, MandalaWatermark, OmIcon1Component, GaneshaSimple1Component, GaneshaSimple2Component, GaneshaSimple3Component, OmIcon2Component, Swastika1Component, SimpleOm1Component } from "../assets/SVGAssets";
 export const lightToMediumColors = [
     "#FFFFFF", // White
     "#F5F5F5", // White Smoke
@@ -99,7 +99,7 @@ export const HEADER_ICONS = [
         text: '|| ॐ नमो नारायणाय ||'
     },
     {
-        Icon: OmIcon1, //॥ मंगलम् ॥ — ॥ Mangalam ॥
+        Icon: OmIcon1Component, //॥ मंगलम् ॥ — ॥ Mangalam ॥
         text: '|| मंगलम् ||'
     },
     {

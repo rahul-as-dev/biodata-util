@@ -13,11 +13,6 @@ const createStyles = (customizations, template, themeConfig) => {
   const fontFamily = safe(customizations?.fontFamily, themeConfig.styles.fontFamily);
   const imageShape = safe(customizations?.imageShape, 'circle');
 
-  // Dynamic Padding based on the Theme's border thickness
-  const paddingTop = themeConfig.styles.paddingTop || 30;
-  const paddingBottom = themeConfig.styles.paddingBottom || 30;
-  const paddingH = themeConfig.styles.paddingHorizontal || 40;
-
   const headerFont = fontFamily === 'sans-serif' ? 'Helvetica-Bold' : 'Times-Bold';
   const bodyFont = fontFamily === 'monospace' ? 'Courier' : (fontFamily === 'sans-serif' ? 'Helvetica' : 'Times-Roman');
 
@@ -50,8 +45,8 @@ const createStyles = (customizations, template, themeConfig) => {
       // READ FROM REGISTRY EXACTLY LIKE THE HTML PREVIEW DOES
       paddingTop: themeConfig.styles.paddingTop,
       paddingBottom: themeConfig.styles.paddingBottom,
-      paddingLeft: themeConfig.styles.paddingHorizontal,
-      paddingRight: themeConfig.styles.paddingHorizontal,
+      paddingLeft: themeConfig.styles.paddingLeft,
+      paddingRight: themeConfig.styles.paddingRight,
     },
     
     // Layout Logic (Template 1 vs Template 2)
@@ -74,7 +69,8 @@ const createStyles = (customizations, template, themeConfig) => {
       alignSelf: 'stretch',
       backgroundColor: template === 'template2' ? primaryColor : 'transparent',
       paddingVertical: template === 'template2' ? 4 : 2,
-      paddingHorizontal: template === 'template2' ? 8 : 0,
+      paddingLeft: template === 'template2' ? 8 : 0,
+      paddingRight: template === 'template2' ? 8 : 0,
       borderBottomWidth: template === 'template2' ? 0 : 1,
       borderBottomColor: '#cbd5e1',
       borderRadius: template === 'template2' ? 3 : 1,

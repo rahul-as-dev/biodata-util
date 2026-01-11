@@ -14,12 +14,13 @@ export const THEMES = {
             // Minimal padding for plain paper
             paddingTop: 40,
             paddingBottom: 40,
-            paddingHorizontal: 40,
+            paddingLeft: 80,
+            paddingRight: 100
         }
     },
     'floral-red': {
         id: 'floral-red',
-        name: 'Ganesh Floral',
+        name: 'Floral Frame',
         asset: floralRedBg, // Using the imported image
         styles: {
             primaryColor: '#991b1b',
@@ -27,7 +28,8 @@ export const THEMES = {
             // HIGHER PADDING to push text inside the flower border
             paddingTop: 65,    
             paddingBottom: 65,
-            paddingHorizontal: 145, 
+            paddingLeft: 130,
+            paddingRight: 100
         }
     },
     // Add more themes...

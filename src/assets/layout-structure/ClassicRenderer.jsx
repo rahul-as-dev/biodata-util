@@ -7,25 +7,25 @@ const ClassicRenderer = ({ biodata, styles, themeConfig }) => {
     const enabledSections = sections.filter(s => s.enabled);
 
     return (
-        <div className="relative z-10 h-full flex flex-col p-[40px] pt-[60px]" style={{ paddingLeft: themeConfig.styles.paddingHorizontal, paddingRight: themeConfig.styles.paddingHorizontal, color: styles.textColor }}>
+        <div className="relative z-10 h-full flex flex-col overflow-hidden" style={{ padding: '3em 6em', paddingLeft: themeConfig.styles.paddingLeft, paddingRight: themeConfig.styles.paddingRight, color: styles.textColor, fontSize: styles.fontSize }}>
             {header.enabled && (
-                <div className="text-center mb-8 pb-1 border-b-2" style={{ borderColor: `${styles.primaryColor}` }}>
-                    {header.icon && <header.icon className="h-20 w-20 mx-auto -mt-10 -mb-0.5 object-contain" style={{ color: styles.primaryColor }}/>}
-                    <h1 className="text-xl font-bold uppercase tracking-wide" style={{ color: styles.primaryColor }}>{header.text}</h1>
+                <div className="text-center mb-[2em] pb-[0.5em] border-b-[0.15em]" style={{ borderColor: `${styles.primaryColor}` }}>
+                    {header.icon && <header.icon className="h-[6em] w-[6em] mx-auto -mt-[3em] -mb-[0.2em]" style={{ color: styles.primaryColor }} />}
+                    <h1 className="text-[1.8em] font-bold uppercase tracking-wider" style={{ color: styles.primaryColor }}>{header.text}</h1>
                 </div>
             )}
             {photo && customizations.imagePlacement === 'above' && (
-                <div className="flex justify-center mb-2 -mt-3"><img src={photo} className="w-40 h-40 object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '3px', borderRadius: customizations.imageShape === 'circle' ? '50%' : '6px' }} alt="Profile" /></div>
+                <div className="flex justify-center mb-[0.5em] -mt-[1.5em]"><img src={photo} className="w-[12em] h-[12em] object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '0.2em', borderRadius: customizations.imageShape === 'circle' ? '50%' : '0.4em' }} alt="Profile" /></div>
             )}
             {overview?.enabled && overview.text && (
-                <div className="mb-8 text-center px-4"><p className="text-sm italic" style={{ color: styles.textColor }}>{overview.text}</p></div>
+                <div className="mb-[0.5em] -mt-[0.5em] text-center px-[1em]"><p className="text-[1.1em] italic leading-relaxed" style={{ color: styles.textColor }}>{overview.text}</p></div>
             )}
-            <div className="flex gap-8 flex-1">
+            <div className="flex gap-[0.5em] flex-1">
                 <div className="flex-1">
                     {enabledSections.map(section => <SectionBlock key={section.id} section={section} styles={styles} />)}
                 </div>
                 {photo && customizations.imagePlacement === 'right' && (
-                    <div className="shrink-0"><img src={photo} className="w-36 h-36 object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '3px', borderRadius: customizations.imageShape === 'circle' ? '50%' : '6px' }} alt="Profile" /></div>
+                    <div className="shrink-0"><img src={photo} className="w-[11em] h-[11em] object-cover shadow-md" style={{ borderColor: styles.primaryColor, borderWidth: '0.2em', borderRadius: customizations.imageShape === 'circle' ? '50%' : '0.4em' }} alt="Profile" /></div>
                 )}
             </div>
         </div>

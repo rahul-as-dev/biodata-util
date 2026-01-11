@@ -88,15 +88,15 @@ const Sidebar = () => {
                     <div>
                         <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-2 block uppercase">Font Size</label>
                         <select
-                            value={biodata.customizations.fontSize || '12px'}
+                            value={biodata.customizations.fontSize || '2em'}
                             onChange={e => updateCustomization('fontSize', e.target.value)}
                             className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-500/20 transition-all dark:text-white"
                         >
-                            {Array.from({ length: 25 }, (_, i) => {
-                                const size = 2 + i * 2;
+                            {Array.from({ length: 20 }, (_, i) => {
+                                const size = 6 + i * 1.5;
                                 return (
                                     <option key={size} value={`${size}px`}>
-                                        {size}px
+                                        {size}em
                                     </option>
                                 );
                             })}

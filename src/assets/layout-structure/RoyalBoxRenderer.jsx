@@ -6,12 +6,38 @@ const RoyalBoxRenderer = ({ biodata, styles }) => {
     const enabledSections = sections.filter(s => s.enabled);
 
     return (
-        <div className="relative z-10 h-full p-8 flex flex-col">
-            <div className="flex-1 border-[3px] border-double p-8 flex flex-col items-center" style={{ borderColor: styles.primaryColor }}>
-                {header.enabled && ( <div className="text-center mb-6">{header.icon && <img src={header.icon} className="h-14 w-14 mx-auto mb-2 object-contain" alt="Icon" />}<h1 className="text-2xl font-serif font-bold uppercase tracking-widest" style={{ color: styles.primaryColor }}>{header.text}</h1><div className="w-24 h-0.5 mx-auto mt-2" style={{ backgroundColor: styles.primaryColor }}></div></div>)}
-                {photo && <div className="mb-6 p-1 border rounded-full" style={{ borderColor: styles.primaryColor }}><img src={photo} className="w-32 h-32 rounded-full object-cover" alt="Profile" /></div>}
-                {overview?.enabled && overview.text && <div className="text-center max-w-lg mb-8 italic text-sm text-slate-600">"{overview.text}"</div>}
-                <div className="w-full grid grid-cols-1 gap-8">{enabledSections.map(s => <div key={s.id} className="text-center"><h3 className="text-sm font-bold uppercase tracking-widest mb-3" style={{ color: styles.primaryColor }}>~ {s.title} ~</h3><div className="space-y-1">{s.fields.map(f => f.enabled && <div key={f.id} className="text-sm"><span className="text-slate-500 text-xs uppercase mr-2">{f.label}:</span><span className="font-medium text-slate-800">{f.value}</span></div>)}</div></div>)}</div>
+        <div className="relative z-10 h-full flex flex-col" style={{ padding: '2em', color: styles.textColor, fontSize: styles.fontSize }}>
+            <div className="flex-1 border-double flex flex-col items-center" style={{ borderColor: styles.primaryColor, borderWidth: '0.25em', padding: '2em' }}>
+                {header.enabled && (
+                    <div className="text-center" style={{ marginBottom: '1.5em' }}>
+                        {header.icon && <header.icon className="mx-auto object-contain" style={{ height: '3.5em', width: '3.5em', marginBottom: '0.5em', color: styles.primaryColor }} />}
+                        <h1 className="font-serif font-bold uppercase tracking-widest" style={{ fontSize: '1.5em', color: styles.primaryColor }}>{header.text}</h1>
+                        <div className="mx-auto" style={{ width: '6em', height: '0.1em', marginTop: '0.5em', backgroundColor: styles.primaryColor }}></div>
+                    </div>
+                )}
+                {photo && (
+                    <div className="border rounded-full" style={{ marginBottom: '1.5em', padding: '0.25em', borderColor: styles.primaryColor }}>
+                        <img src={photo} className="rounded-full object-cover" style={{ width: '8em', height: '8em' }} alt="Profile" />
+                    </div>
+                )}
+                {overview?.enabled && overview.text && (
+                    <div className="text-center italic" style={{ fontSize: '0.875em', maxWidth: '30em', marginBottom: '2em', opacity: 0.7 }}>"{overview.text}"</div>
+                )}
+                <div className="w-full grid grid-cols-1" style={{ gap: '2em' }}>
+                    {enabledSections.map(s => (
+                        <div key={s.id} className="text-center">
+                            <h3 className="font-bold uppercase tracking-widest" style={{ fontSize: '0.85em', color: styles.primaryColor, marginBottom: '0.75em' }}>~ {s.title} ~</h3>
+                            <div className="flex flex-col" style={{ gap: '0.25em' }}>
+                                {s.fields.map(f => f.enabled && (
+                                    <div key={f.id} style={{ fontSize: '0.85em' }}>
+                                        <span className="uppercase mr-2" style={{ fontSize: '0.75em', fontWeight: 700, opacity: 0.5 }}>{f.label}:</span>
+                                        <span style={{ fontWeight: 500 }}>{f.value}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         </div>
     );

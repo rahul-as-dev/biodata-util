@@ -27,29 +27,39 @@ import { PalaceRenderer } from './PalaceRenderer';
 
 // Standardizes how section titles and fields look across most templates
 export const SectionBlock = ({ section, styles, isGrid = false, isTimeline = false }) => (
-    <div key={section.id} className={"break-inside-avoid mb-6" + (isGrid ? " mb-4" : "") }>
-        <div className={"mb-2" + (isTimeline ? " flex items-center gap-3" : " text-left") }>
+    <div key={section.id} className="break-inside-avoid" style={{ marginBottom: isGrid ? '1.2em' : '1.8em' }}>
+        <div style={{ marginBottom: '0.6em', textAlign: 'left', display: isTimeline ? 'flex' : 'block', alignItems: 'center', gap: '0.2em' }}>
             {isTimeline && (
-                <div className="w-3 h-3 rounded-full shrink-0 outline outline-2 outline-offset-2" style={{ backgroundColor: styles.primaryColor, outlineColor: styles.primaryColor }}></div>
+                <div className="rounded-full shrink-0 outline-[0.1em] outline-offset-[0.1em]" style={{ width: '0.6em', height: '0.6em', backgroundColor: styles.primaryColor, outlineColor: styles.primaryColor }}></div>
             )}
             <div
-                className="text-xs font-bold uppercase tracking-widest inline-block border-b-2 pb-1"
-                style={{ 
+                className="font-bold uppercase tracking-widest inline-block border-b-[0.15em]"
+                style={{
                     color: styles.primaryColor,
-                    borderColor: `${styles.primaryColor}60`,
-                    fontSize: `calc(${styles.fontSize} + 3px)`
+                    borderColor: `${styles.primaryColor}70`,
+                    fontSize: '1.2em',
+                    paddingBottom: '0.15em'
                 }}
             >
                 {section.title}
             </div>
         </div>
-        <div className={"flex flex-col space-y-1.5" + (isTimeline ? " pl-6 border-l-2 ml-1.5" : "")} style={{ borderColor: isTimeline ? `${styles.primaryColor}20` : 'transparent', color: styles.textColor, fontSize: styles.fontSize }}>
+        <div
+            className="flex flex-col"
+            style={{
+                rowGap: '0.2em',
+                paddingLeft: isTimeline ? '1.2em' : '0',
+                borderLeft: isTimeline ? '0.12em solid' : 'none',
+                marginLeft: isTimeline ? '0.3em' : '0',
+                borderColor: `${styles.primaryColor}20`,
+            }}
+        >
             {section.fields.map(f => f.enabled && (
-                <div key={f.id} className="flex items-baseline text-sm" style={{ color: styles.textColor, fontSize: styles.fontSize }}>
-                    <span className="w-1/3 text-[10px] font-bold uppercase tracking-wide shrink-0" style={{ color: styles.textColor, fontSize: `calc(${styles.fontSize} - 2px)` }}>
+                <div key={f.id} className="flex items-baseline" style={{ fontSize: '1em' }}>
+                    <span className="w-1/3 font-bold uppercase tracking-wide shrink-0" style={{ fontSize: '0.75em', opacity: 0.7 }}>
                         {f.showLabel ? f.label : ''}
                     </span>
-                    <span className="w-2/3 font-medium break-words whitespace-pre-wrap" style={{ color: styles.textColor, fontSize: styles.fontSize }}>
+                    <span className="w-2/3 font-medium overflow-wrap-anywhere whitespace-pre-wrap">
                         {f.value}
                     </span>
                 </div>
