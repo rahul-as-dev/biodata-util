@@ -56,7 +56,7 @@ export const SectionBlock = ({ section, styles, isGrid = false, isTimeline = fal
         >
             {section.fields.map(f => f.enabled && (
                 <div key={f.id} className="flex items-baseline" style={{ fontSize: '1em' }}>
-                    <span className="w-1/3 font-bold uppercase tracking-wide shrink-0" style={{ fontSize: '0.75em', opacity: 0.7 }}>
+                    <span className="w-1/3 font-bold uppercase tracking-wide shrink-0" style={{ fontSize: '0.75em', opacity: 0.8 }}>
                         {f.showLabel ? f.label : ''}
                     </span>
                     <span className="w-2/3 font-medium overflow-wrap-anywhere whitespace-pre-wrap">
