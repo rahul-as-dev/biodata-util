@@ -93,33 +93,41 @@ export const HEADER_ICONS = [
     {
         Icon: undefined,
         text: '',
+        svgPath: null,
     },
     {
-        Icon: SimpleOm1Component, //ॐ नमो नारायणाय — Om Namo Narayanaya
-        text: '|| ॐ नमो नारायणाय ||'
+        Icon: SimpleOm1Component,
+        text: '|| ॐ नमो नारायणाय ||',
+        svgPath: '/src/assets/svg-assets/SimpleOm1.svg',
     },
     {
-        Icon: OmIcon1Component, //॥ मंगलम् ॥ — ॥ Mangalam ॥
-        text: '|| मंगलम् ||'
+        Icon: OmIcon1Component,
+        text: '|| मंगलम् ||',
+        svgPath: null, // Inline SVG in SVGAssets.jsx, handled separately
     },
     {
-        Icon: OmIcon2Component, //शुभे शोभन मंगलम् — Auspicious and beautiful beginnings
-        text: '|| शुभे शोभन मंगलम् ||'
+        Icon: OmIcon2Component,
+        text: '|| शुभे शोभन मंगलम् ||',
+        svgPath: '/src/assets/svg-assets/OmIcon2.svg',
     },
     {
-        Icon: GaneshaSimple1Component, //ॐ श्री गणेशाय नमः — Om Shri Ganeshaya Namah
-        text: '|| ॐ श्री गणेशाय नमः ||'
+        Icon: GaneshaSimple1Component,
+        text: '|| ॐ श्री गणेशाय नमः ||',
+        svgPath: '/src/assets/svg-assets/SimpleGanesha1.svg',
     },
     {
-        Icon: GaneshaSimple2Component, //ॐ गं गणपतये नमः — Om Gam Ganapataye Namah
-        text: '|| ॐ गं गणपतये नमः ||'
+        Icon: GaneshaSimple2Component,
+        text: '|| ॐ गं गणपतये नमः ||',
+        svgPath: '/src/assets/svg-assets/SimpleGanesha2.svg',
     },
     {
-        Icon: GaneshaSimple3Component, //श्री गणेशाय नमः — Shri Ganeshaya Namah
-        text: '|| श्री गणेशाय नमः ||'
+        Icon: GaneshaSimple3Component,
+        text: '|| श्री गणेशाय नमः ||',
+        svgPath: '/src/assets/svg-assets/SimpleGanesha3.svg',
     },
     {
-        Icon: Swastika1Component, //शुभ लाभ — Shubh Labh
-        text: '|| शुभ लाभ ||'
+        Icon: Swastika1Component,
+        text: '|| शुभ लाभ ||',
+        svgPath: '/src/assets/svg-assets/Swastika1.svg',
     }
 ]

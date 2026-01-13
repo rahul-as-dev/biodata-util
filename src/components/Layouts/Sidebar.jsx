@@ -134,7 +134,7 @@ const Sidebar = () => {
                 <div className="max-h-40 overflow-y-auto pr-1 -mr-2 custom-scrollbar">
                     {/* Compact Grid */}
                     <div className="grid grid-cols-6 gap-4">
-                        {HEADER_ICONS.map(({ Icon, text }, index) => {
+                        {HEADER_ICONS.map(({ Icon, text, svgPath }, index) => {
                             const isActive = biodata.header.icon === Icon;
 
                             return (
@@ -144,6 +144,7 @@ const Sidebar = () => {
                                         updateBiodata(d => {
                                             d.header.icon = Icon;
                                             d.header.text = text;
+                                            d.header.svgPath = svgPath;
                                             d.header.enabled = true;
                                         })
                                     }

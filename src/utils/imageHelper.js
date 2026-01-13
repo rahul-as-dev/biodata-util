@@ -21,25 +21,25 @@ export const convertToHighResPng = async (url) => {
 
     // 4. Determine Dimensions (Crucial for Canvas)
     // Browsers need explicit pixel values to draw SVGs correctly.
-    let width = 1200; 
+    let width = 1200;
     let height = 1600;
 
     // Try to get natural dimensions
     if (svgElement.hasAttribute('width') && svgElement.hasAttribute('height')) {
-        const w = parseFloat(svgElement.getAttribute('width'));
-        const h = parseFloat(svgElement.getAttribute('height'));
-        if (!isNaN(w) && !isNaN(h)) {
-            width = w;
-            height = h;
-        }
-    } 
+      const w = parseFloat(svgElement.getAttribute('width'));
+      const h = parseFloat(svgElement.getAttribute('height'));
+      if (!isNaN(w) && !isNaN(h)) {
+        width = w;
+        height = h;
+      }
+    }
     // Fallback to viewBox
     else if (svgElement.hasAttribute('viewBox')) {
-        const viewBox = svgElement.getAttribute('viewBox').split(/[\s,]+/).map(Number);
-        if (viewBox.length === 4) {
-            width = viewBox[2];
-            height = viewBox[3];
-        }
+      const viewBox = svgElement.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+      if (viewBox.length === 4) {
+        width = viewBox[2];
+        height = viewBox[3];
+      }
     }
 
     // Force absolute pixel dimensions into the SVG string for consistency
@@ -56,19 +56,19 @@ export const convertToHighResPng = async (url) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
-      
+
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        // 2x Scale for crisp print quality
-        const scale = 2; 
-        
+        // 3x Scale for high-quality print output
+        const scale = 3;
+
         canvas.width = width * scale;
         canvas.height = height * scale;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-            resolve(null);
-            return;
+          resolve(null);
+          return;
         }
 
         // REMOVED: ctx.fillRect('#ffffff') 
@@ -77,9 +77,9 @@ export const convertToHighResPng = async (url) => {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        
+
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        
+
         // Export as PNG with transparency preserved
         resolve(canvas.toDataURL('image/png', 1.0));
       };
@@ -94,6 +94,89 @@ export const convertToHighResPng = async (url) => {
 
   } catch (error) {
     console.error("Error converting SVG to PNG:", error);
+    return null;
+  }
+};
+
+/**
+ * Converts an SVG string to PNG, replacing 'currentColor' with actual color.
+ * Used for header icons that need dynamic color baking for PDF.
+ * @param {string} svgString - Raw SVG markup
+ * @param {string} color - Hex color to replace currentColor (e.g., '#B71C1C')
+ * @param {number} size - Output size in pixels (default: 200)
+ * @returns {Promise<string|null>} - PNG data URL or null on failure
+ */
+export const convertSvgStringToPng = async (svgString, color = '#000000', size = 200) => {
+  if (!svgString) return null;
+
+  try {
+    // 1. Replace all 'currentColor' with the actual color
+    const coloredSvg = svgString.replace(/currentColor/gi, color);
+
+    // 2. Parse to normalize dimensions
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(coloredSvg, 'image/svg+xml');
+    const svgElement = doc.documentElement;
+
+    // 3. Get viewBox dimensions or fallback
+    let width = size;
+    let height = size;
+
+    if (svgElement.hasAttribute('viewBox')) {
+      const viewBox = svgElement.getAttribute('viewBox').split(/[\s,]+/).map(Number);
+      if (viewBox.length === 4) {
+        const aspectRatio = viewBox[2] / viewBox[3];
+        if (aspectRatio > 1) {
+          height = size / aspectRatio;
+        } else {
+          width = size * aspectRatio;
+        }
+      }
+    }
+
+    // 4. Force dimensions into SVG
+    svgElement.setAttribute('width', `${size}px`);
+    svgElement.setAttribute('height', `${size}px`);
+
+    // 5. Serialize and convert to data URL
+    const serializer = new XMLSerializer();
+    const newSvgText = serializer.serializeToString(doc);
+    const base64Svg = btoa(unescape(encodeURIComponent(newSvgText)));
+    const dataUrl = `data:image/svg+xml;base64,${base64Svg}`;
+
+    // 6. Rasterize via Canvas
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const scale = 3; // 3x for high-quality output
+        canvas.width = size * scale;
+        canvas.height = size * scale;
+
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(null);
+          return;
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        resolve(canvas.toDataURL('image/png', 1.0));
+      };
+
+      img.onerror = () => {
+        console.warn('SVG to PNG conversion failed');
+        resolve(null);
+      };
+
+      img.src = dataUrl;
+    });
+  } catch (error) {
+    console.error('Error converting SVG string to PNG:', error);
     return null;
   }
 };
