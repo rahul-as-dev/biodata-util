@@ -1,7 +1,9 @@
 import React from 'react';
 import { getThemeConfig } from './themeRegistry';
 import { convertToHighResPng, convertSvgStringToPng } from './imageHelper';
-import './fontRegistry'; // Initialize fonts
+
+// Fonts will be registered lazily inside generatePdf
+
 
 // Map template IDs to PDF renderer import paths
 const PDF_RENDERERS_MAP = {
@@ -27,12 +29,16 @@ const PDF_RENDERERS_MAP = {
 export async function generatePdf(biodata) {
   try {
     // 1. Dynamic import heavy libraries
-    const [{ pdf, Document }, SidebarPdfRenderer] = await Promise.all([
+    const [{ pdf, Document }, SidebarPdfRenderer, { registerFonts }] = await Promise.all([
       import('@react-pdf/renderer'),
       biodata.template === 'template2' || biodata.template === 'template3'
         ? import('./pdf-layouts/SidebarPdfRenderer').then(m => m.default)
-        : Promise.resolve(null)
+        : Promise.resolve(null),
+      import('./fontRegistry')
     ]);
+
+    // Ensure fonts are registered before rendering
+    await registerFonts();
 
     const safeBiodata = {
       ...biodata,

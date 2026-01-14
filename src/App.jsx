@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { BiodataProvider } from './contexts/BiodataContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import Layout from './components/Layouts/Layout';
+import PageLoader from './components/common/PageLoader';
 
 const HomePage = lazy(() => import('./pages/HomePage'));
 const CreatePage = lazy(() => import('./pages/CreatePage'));
@@ -14,11 +15,7 @@ function App() {
     <ThemeProvider>
       <BiodataProvider>
         <BrowserRouter>
-          <Suspense fallback={
-            <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-600"></div>
-            </div>
-          }>
+          <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route element={<Layout />}>
                 <Route path="/" element={<HomePage />} />

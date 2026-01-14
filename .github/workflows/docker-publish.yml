@@ -1,112 +1,88 @@
-name: Build and Publish Docker image
+name: Build and Deploy to Cloud Run
 
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: read
-  packages: write
-  id-token: write
+env:
+  # --- CONFIGURATION ---
+  GCP_REGION: asia-south1
+  # The name of your Artifact Registry Repository (Must be created manually once!)
+  # Command: gcloud artifacts repositories create biodata-repo --repository-format=docker --location=asia-south1
+  AR_REPO_NAME: biodata-repo
+  # The name of the Cloud Run Service
+  SERVICE_NAME: best-biodata-maker
+  # Image name
+  IMAGE_NAME: best-marriage-biodata-maker
 
 jobs:
-  build-and-publish:
-    name: Build and push Docker image
+  build-deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
-    env:
-      IMAGE_NAME: marriage-biodata-maker
-      TAG: ${{ github.sha }}
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
+      # 1. Setup Build Environment
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Cache Docker layers
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-
-      # Build & push to GitHub Container Registry (GHCR)
-      - name: Login to GHCR
-        if: ${{ github.repository_owner }}
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Build and push to GHCR
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-
-      # Build & push to Google Container Registry (GCR) if secret provided
+      # 2. Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         if: ${{ secrets.GCP_SA_KEY != '' }}
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Configure Docker authentication for GCR
+      # 3. Configure Docker for Artifact Registry
+      - name: Configure Docker Auth (GCP)
         if: ${{ secrets.GCP_SA_KEY != '' }}
-        uses: google-github-actions/docker-auth@v1
+        run: |
+          gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
-      - name: Build and push to GCR
-        if: ${{ secrets.GCP_SA_KEY != '' && env.GCP_PROJECT != '' }}
+      # 4. Login to GitHub Container Registry (Backup/Cache)
+      - name: Login to GHCR
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # 5. Build and Push
+      - name: Build and Push Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
           push: true
+          # Push to BOTH Artifact Registry (Primary) and GHCR (Backup)
           tags: |
-            gcr.io/${{ env.GCP_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}
-            gcr.io/${{ env.GCP_PROJECT }}/${{ env.IMAGE_NAME }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+          # Use GitHub Actions Cache for speed
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
-      # Build & push to AWS ECR if credentials provided
-      - name: Configure AWS credentials
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' && secrets.AWS_REGION != '' && secrets.AWS_ACCOUNT_ID != '' && secrets.ECR_REPOSITORY != '' }}
-        uses: aws-actions/configure-aws-credentials@v2
+      # 6. Deploy to Cloud Run
+      - name: Deploy to Cloud Run
+        if: ${{ secrets.GCP_SA_KEY != '' }}
+        uses: google-github-actions/deploy-cloudrun@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          service: ${{ env.SERVICE_NAME }}
+          region: ${{ env.GCP_REGION }}
+          # Deploy the specific SHA tag we just built to ensure consistency
+          image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          flags: '--allow-unauthenticated'
 
-      - name: Login to Amazon ECR
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' && secrets.AWS_REGION != '' && secrets.AWS_ACCOUNT_ID != '' && secrets.ECR_REPOSITORY != '' }}
+      - name: Summary
         run: |
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com
-
-      - name: Create ECR repository (if missing)
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' && secrets.AWS_REGION != '' && secrets.AWS_ACCOUNT_ID != '' && secrets.ECR_REPOSITORY != '' }}
-        run: |
-          aws ecr describe-repositories --repository-names ${{ secrets.ECR_REPOSITORY }} || aws ecr create-repository --repository-name ${{ secrets.ECR_REPOSITORY }}
-
-      - name: Build and push to ECR
-        if: ${{ secrets.AWS_ACCESS_KEY_ID != '' && secrets.AWS_SECRET_ACCESS_KEY != '' && secrets.AWS_REGION != '' && secrets.AWS_ACCOUNT_ID != '' && secrets.ECR_REPOSITORY != '' }}
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ env.TAG }}
-            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
-
-      - name: Image push summary
-        run: |
-          echo "GHCR image: ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}"
-          if [ -n "${{ secrets.GCP_SA_KEY }}" ]; then echo "GCR image: gcr.io/${{ env.GCP_PROJECT }}/${{ env.IMAGE_NAME }}:${{ env.TAG }}"; fi
-          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then echo "ECR image: ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ secrets.ECR_REPOSITORY }}:${{ env.TAG }}"; fi
+          echo "🚀 Deployment Triggered for Service: ${{ env.SERVICE_NAME }}"
+          echo "🌍 Region: ${{ env.GCP_REGION }}"
+          echo "📦 Image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}"
