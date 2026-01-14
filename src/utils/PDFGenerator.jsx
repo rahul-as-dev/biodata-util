@@ -1,41 +1,24 @@
 import React from 'react';
-import { pdf, Document } from '@react-pdf/renderer';
 import { getThemeConfig } from './themeRegistry';
 import { convertToHighResPng, convertSvgStringToPng } from './imageHelper';
 import './fontRegistry'; // Initialize fonts
 
-// Import PDF Layout Renderers
-import ClassicPdfRenderer from './pdf-layouts/ClassicPdfRenderer';
-import ProfileHeroPdfRenderer from './pdf-layouts/ProfileHeroPdfRenderer';
-import SidebarPdfRenderer from './pdf-layouts/SidebarPdfRenderer';
-import ElegantSplitPdfRenderer from './pdf-layouts/ElegantSplitPdfRenderer';
-import SmartGridPdfRenderer from './pdf-layouts/SmartGridPdfRenderer';
-import BoldBandPdfRenderer from './pdf-layouts/BoldBandPdfRenderer';
-import DiagonalPdfRenderer from './pdf-layouts/DiagonalPdfRenderer';
-import SwissCleanPdfRenderer from './pdf-layouts/SwissCleanPdfRenderer';
-import ClassicFramePdfRenderer from './pdf-layouts/ClassicFramePdfRenderer';
-import RibbonFlowPdfRenderer from './pdf-layouts/RibbonFlowPdfRenderer';
-import StackedCardPdfRenderer from './pdf-layouts/StackedCardPdfRenderer';
-import MinimalLinesPdfRenderer from './pdf-layouts/MinimalLinesPdfRenderer';
-import DivineMandalaPdfRenderer from './pdf-layouts/DivineMandalaPdfRenderer';
-
-// Map template IDs to PDF renderers
-const PDF_RENDERERS = {
-  template1: ClassicPdfRenderer,   // Classic Center
-  template2: (props) => <SidebarPdfRenderer {...props} isRight={false} />, // Modern Left
-  template3: (props) => <SidebarPdfRenderer {...props} isRight={true} />,  // Modern Right
-  template4: ElegantSplitPdfRenderer, // Elegant Split
-  template6: SmartGridPdfRenderer,    // Smart Grid
-  template8: BoldBandPdfRenderer,     // Bold Band
-  template9: ProfileHeroPdfRenderer, // Profile Hero
-  template10: SwissCleanPdfRenderer, // Swiss Clean
-  template11: DiagonalPdfRenderer,    // Diagonal
-  template12: ClassicFramePdfRenderer, // Classic Frame
-  template13: RibbonFlowPdfRenderer,   // Ribbon Flow
-  template14: StackedCardPdfRenderer,  // Stacked Card
-  template17: MinimalLinesPdfRenderer, // Minimal Lines
-  template24: DivineMandalaPdfRenderer, // Divine Mandala
-  // Add more as needed
+// Map template IDs to PDF renderer import paths
+const PDF_RENDERERS_MAP = {
+  template1: () => import('./pdf-layouts/ClassicPdfRenderer'),
+  template2: () => import('./pdf-layouts/SidebarPdfRenderer'),
+  template3: () => import('./pdf-layouts/SidebarPdfRenderer'),
+  template4: () => import('./pdf-layouts/ElegantSplitPdfRenderer'),
+  template6: () => import('./pdf-layouts/SmartGridPdfRenderer'),
+  template8: () => import('./pdf-layouts/BoldBandPdfRenderer'),
+  template9: () => import('./pdf-layouts/ProfileHeroPdfRenderer'),
+  template10: () => import('./pdf-layouts/SwissCleanPdfRenderer'),
+  template11: () => import('./pdf-layouts/DiagonalPdfRenderer'),
+  template12: () => import('./pdf-layouts/ClassicFramePdfRenderer'),
+  template13: () => import('./pdf-layouts/RibbonFlowPdfRenderer'),
+  template14: () => import('./pdf-layouts/StackedCardPdfRenderer'),
+  template17: () => import('./pdf-layouts/MinimalLinesPdfRenderer'),
+  template24: () => import('./pdf-layouts/DivineMandalaPdfRenderer'),
 };
 
 /**
@@ -43,6 +26,14 @@ const PDF_RENDERERS = {
  */
 export async function generatePdf(biodata) {
   try {
+    // 1. Dynamic import heavy libraries
+    const [{ pdf, Document }, SidebarPdfRenderer] = await Promise.all([
+      import('@react-pdf/renderer'),
+      biodata.template === 'template2' || biodata.template === 'template3'
+        ? import('./pdf-layouts/SidebarPdfRenderer').then(m => m.default)
+        : Promise.resolve(null)
+    ]);
+
     const safeBiodata = {
       ...biodata,
       customizations: biodata.customizations || { themeId: 'minimal', imageShape: 'circle' },
@@ -50,7 +41,7 @@ export async function generatePdf(biodata) {
       template: biodata.template || 'template1'
     };
 
-    // 1. Get theme config and convert background if needed
+    // 2. Resolve theme config and convert background if needed
     const themeConfig = getThemeConfig(safeBiodata.customizations.themeId);
     let bgAsset = themeConfig.asset;
 
@@ -58,7 +49,7 @@ export async function generatePdf(biodata) {
       bgAsset = await convertToHighResPng(bgAsset);
     }
 
-    // 2. Convert header icon SVG to PNG with primaryColor baked in
+    // 3. Convert header icon SVG to PNG with primaryColor baked in
     let headerIconImage = null;
     if (safeBiodata.header?.svgPath) {
       const primaryColor = safeBiodata.customizations?.primaryColor || '#000000';
@@ -71,17 +62,24 @@ export async function generatePdf(biodata) {
       }
     }
 
-    // 3. Prepare biodata with processed assets
+    // 4. Prepare biodata with processed assets
     const printBiodata = {
       ...safeBiodata,
       processedBg: bgAsset,
       processedHeaderIcon: headerIconImage,
     };
 
-    // 4. Select appropriate PDF renderer based on template
-    const Renderer = PDF_RENDERERS[safeBiodata.template] || ClassicPdfRenderer;
+    // 5. Select appropriate PDF renderer based on template
+    let Renderer;
+    if (safeBiodata.template === 'template2' || safeBiodata.template === 'template3') {
+      const isRight = safeBiodata.template === 'template3';
+      Renderer = (props) => <SidebarPdfRenderer {...props} isRight={isRight} />;
+    } else {
+      const importFn = PDF_RENDERERS_MAP[safeBiodata.template] || PDF_RENDERERS_MAP.template1;
+      Renderer = (await importFn()).default;
+    }
 
-    // 5. Generate PDF
+    // 6. Generate PDF
     const doc = (
       <Document title="Marriage Biodata">
         <Renderer biodata={printBiodata} />
@@ -91,7 +89,7 @@ export async function generatePdf(biodata) {
     const asPdf = pdf(doc);
     const blob = await asPdf.toBlob();
 
-    // 6. Trigger download
+    // 7. Trigger download
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
 

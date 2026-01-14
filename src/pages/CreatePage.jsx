@@ -4,16 +4,27 @@ import { useTheme } from '../contexts/ThemeContext';
 import BiodataPreview from '../components/BiodataPreview';
 import PhotoUpload from '../components/Forms/PhotoUpload';
 import Sidebar from '../components/Layouts/Sidebar';
-import DraggableList from '../components/common/DraggableList'; 
+import DraggableList from '../components/common/DraggableList';
 import { cn } from '../utils/cn';
 import { generatePdf } from '../utils/PDFGenerator';
 
-import {
-    Plus, Trash2, Eye, EyeOff, FileText, Image,
-    Palette as PaletteIcon, ChevronRight,
-    GripVertical, ArrowUp, ArrowDown,
-    ZoomIn, ZoomOut, Maximize, Minimize2, Maximize2, Download
-} from 'lucide-react';
+import Plus from 'lucide-react/dist/esm/icons/plus';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import Eye from 'lucide-react/dist/esm/icons/eye';
+import EyeOff from 'lucide-react/dist/esm/icons/eye-off';
+import FileText from 'lucide-react/dist/esm/icons/file-text';
+import Image from 'lucide-react/dist/esm/icons/image';
+import PaletteIcon from 'lucide-react/dist/esm/icons/palette';
+import ChevronRight from 'lucide-react/dist/esm/icons/chevron-right';
+import GripVertical from 'lucide-react/dist/esm/icons/grip-vertical';
+import ArrowUp from 'lucide-react/dist/esm/icons/arrow-up';
+import ArrowDown from 'lucide-react/dist/esm/icons/arrow-down';
+import ZoomIn from 'lucide-react/dist/esm/icons/zoom-in';
+import ZoomOut from 'lucide-react/dist/esm/icons/zoom-out';
+import Maximize from 'lucide-react/dist/esm/icons/maximize';
+import Minimize2 from 'lucide-react/dist/esm/icons/minimize-2';
+import Maximize2 from 'lucide-react/dist/esm/icons/maximize-2';
+import Download from 'lucide-react/dist/esm/icons/download';
 import { motion, AnimatePresence } from 'framer-motion';
 import { EnchantedFireflies as PreviewTheme } from '../assets/background-theme/EnchantedFireflies';
 import { DottedEditorTheme as EditorTheme } from '../assets/background-theme/DottedEditorTheme';
@@ -95,18 +106,18 @@ const OverviewEditor = () => {
                     {biodata.overview.enabled ? <Eye size={16} /> : <EyeOff size={16} />}
                 </button>
             </div>
-            
+
             <AnimatePresence>
                 {isExpanded && (
                     <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="p-3">
-                        <input 
+                        <input
                             value={biodata.overview.title}
                             onChange={(e) => updateOverview('title', e.target.value)}
                             className="w-full text-xs font-bold uppercase text-slate-500 bg-transparent border-b border-transparent focus:border-rose-500 outline-none pb-1 mb-2"
                             placeholder="TITLE (e.g. ABOUT ME)"
                         />
-                        <textarea 
-                            rows={3} 
+                        <textarea
+                            rows={3}
                             value={biodata.overview.text}
                             onChange={(e) => updateOverview('text', e.target.value)}
                             className="w-full text-sm text-slate-800 dark:text-slate-200 bg-slate-100 dark:bg-slate-950/50 p-2 rounded-lg border border-transparent focus:border-rose-500 outline-none resize-y placeholder:text-slate-400"
@@ -184,19 +195,19 @@ const CreatePage = () => {
     return (
         // REMOVED 'z-0' from here to avoid creating a lower stacking context
         <div ref={containerRef} className="h-full flex overflow-hidden relative">
-            
+
             {/* --- LEFT PANEL --- */}
-            <div 
-                style={{ width: isFullScreen ? '0%' : `${leftWidth}%` }} 
+            <div
+                style={{ width: isFullScreen ? '0%' : `${leftWidth}%` }}
                 className={cn(
-                    "relative flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10", 
+                    "relative flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10",
                     isFullScreen && "min-w-0 w-0 overflow-hidden border-none"
                 )}
             >
                 <EditorTheme />
                 <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 p-4 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
                     <div className="flex px-4 gap-4">
-                         {tabs.map(tab => (
+                        {tabs.map(tab => (
                             <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("cursor-pointer p-2 text-sm font-medium flex items-center justify-center gap-2 rounded-lg transition-all", activeTab === tab.id ? "text-rose-600 bg-white/80 dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700")} title={tab.label}>{tab.icon} <span className="hidden xl:inline">{tab.label}</span></button>
                         ))}
                     </div>
@@ -204,7 +215,7 @@ const CreatePage = () => {
                         onClick={handleDownload}
                         className="cursor-pointer group flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 shadow-md hover:shadow-lg transition-all active:scale-95"
                     >
-                        <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" /> 
+                        <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" />
                         <span>Download PDF</span>
                     </button>
                 </div>
@@ -236,10 +247,10 @@ const CreatePage = () => {
             </div>
 
             {/* --- RIGHT PANEL --- */}
-            <div 
-                style={{ width: isFullScreen ? '100%' : `${100 - leftWidth}%` }} 
+            <div
+                style={{ width: isFullScreen ? '100%' : `${100 - leftWidth}%` }}
                 className={cn(
-                    "relative overflow-hidden flex flex-col transition-all duration-300", 
+                    "relative overflow-hidden flex flex-col transition-all duration-300",
                     // FIX: !fixed and !z-[9999] force it above everything in the entire DOM
                     // Added bg-slate-900 to ensure opacity doesn't show background nav
                     isFullScreen ? "!fixed !inset-0 !z-[9999] h-screen w-screen bg-slate-900" : "relative"
@@ -249,14 +260,14 @@ const CreatePage = () => {
 
                 {/* EXIT BUTTON: Z-Index higher than container */}
                 <div className="absolute top-6 right-6 z-[10000]">
-                     <button onClick={toggleFullScreen} className={cn("flex items-center gap-2.5 px-4 py-2 rounded-full border shadow-lg transition-all duration-300 group backdrop-blur-md cursor-pointer", "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 hover:border-rose-200")}>
+                    <button onClick={toggleFullScreen} className={cn("flex items-center gap-2.5 px-4 py-2 rounded-full border shadow-lg transition-all duration-300 group backdrop-blur-md cursor-pointer", "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 hover:border-rose-200")}>
                         <span className="relative flex h-2 w-2">
-                          <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500")}></span>
-                          <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500")}></span>
+                            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500")}></span>
+                            <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500")}></span>
                         </span>
                         <span className={cn("text-xs font-bold tracking-wide select-none text-slate-600 dark:text-slate-300")}>{isFullScreen ? 'EXIT FULL SCREEN' : 'LIVE PREVIEW'}</span>
                         {isFullScreen ? <Minimize2 size={16} className="ml-1" /> : <Maximize2 size={16} className="ml-1" />}
-                     </button>
+                    </button>
                 </div>
 
                 {/* WORKSPACE: Added pt-24 in full screen to push PDF down */}

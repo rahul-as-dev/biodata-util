@@ -1,5 +1,6 @@
 import React from 'react';
-import { Heart, Github } from 'lucide-react';
+import Heart from 'lucide-react/dist/esm/icons/heart';
+import Github from 'lucide-react/dist/esm/icons/github';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {

@@ -1,9 +1,9 @@
 import React from 'react';
 import { ReactSortable } from 'react-sortablejs';
-import { GripVertical } from 'lucide-react';
+import GripVertical from 'lucide-react/dist/esm/icons/grip-vertical';
 import { cn } from '../../utils/cn';
 
-const DraggableList = ({ items = [], onSortEnd = () => {}, renderItem, className, itemClassName }) => {
+const DraggableList = ({ items = [], onSortEnd = () => { }, renderItem, className, itemClassName }) => {
     // Clone to avoid mutating props directly via sortablejs
     const listCopy = items.map(it => ({ ...it }));
 
@@ -23,15 +23,15 @@ const DraggableList = ({ items = [], onSortEnd = () => {}, renderItem, className
             ghostClass="sortable-ghost" // Add this to your css if you want ghost styles
         >
             {items.map(item => (
-                <div 
-                    key={item.id} 
-                    data-id={item.id} 
+                <div
+                    key={item.id}
+                    data-id={item.id}
                     className={cn(
                         "group relative flex items-start gap-2 mb-2",
                         itemClassName
                     )}
                 >
-                    <button 
+                    <button
                         className="drag-handle mt-3 cursor-grab active:cursor-grabbing text-slate-400 hover:text-brand-500 transition-colors"
                         title="Drag to reorder"
                     >

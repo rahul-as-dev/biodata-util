@@ -2,7 +2,11 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useBiodata } from '../../contexts/BiodataContext';
 import { cn } from '../../utils/cn';
 import ReactCrop from 'react-image-crop';
-import { UploadCloud, Check, X, Trash2, Image as ImageIcon } from 'lucide-react';
+import UploadCloud from 'lucide-react/dist/esm/icons/upload-cloud';
+import Check from 'lucide-react/dist/esm/icons/check';
+import X from 'lucide-react/dist/esm/icons/x';
+import Trash2 from 'lucide-react/dist/esm/icons/trash-2';
+import ImageIcon from 'lucide-react/dist/esm/icons/image';
 import 'react-image-crop/dist/ReactCrop.css';
 
 const PhotoUpload = () => {
@@ -78,13 +82,13 @@ const PhotoUpload = () => {
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-2">Shape</label>
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                         {['circle', 'rect'].map(s => (
-                            <button 
-                                key={s} 
+                            <button
+                                key={s}
                                 onClick={() => updateShape(s)}
                                 className={cn(
                                     "flex-1 py-1.5 text-sm rounded-md capitalize transition-colors",
-                                    biodata.customizations.imageShape === s 
-                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium" 
+                                    biodata.customizations.imageShape === s
+                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium"
                                         : "text-slate-500"
                                 )}
                             >
@@ -97,13 +101,13 @@ const PhotoUpload = () => {
                     <label className="text-xs font-semibold text-slate-500 uppercase block mb-2">Placement</label>
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                         {['above', 'right'].map(p => (
-                            <button 
-                                key={p} 
+                            <button
+                                key={p}
                                 onClick={() => updateBiodata(d => { d.customizations.imagePlacement = p; })}
                                 className={cn(
                                     "flex-1 py-1.5 text-sm rounded-md capitalize transition-colors",
                                     biodata.customizations.imagePlacement === p
-                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium" 
+                                        ? "bg-white dark:bg-slate-600 shadow text-brand-600 font-medium"
                                         : "text-slate-500"
                                 )}
                             >
@@ -118,15 +122,15 @@ const PhotoUpload = () => {
             {!imgSrc && (
                 biodata.photo ? (
                     <div className="flex flex-col items-center p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-dashed border-slate-300">
-                        <img 
-                            src={biodata.photo} 
-                            alt="Profile" 
+                        <img
+                            src={biodata.photo}
+                            alt="Profile"
                             className={cn(
                                 "w-32 h-32 object-cover border-4 border-white dark:border-slate-700 shadow-md mb-4",
                                 biodata.customizations.imageShape === 'circle' ? 'rounded-full' : 'rounded-lg'
-                            )} 
+                            )}
                         />
-                        <button 
+                        <button
                             onClick={() => updateBiodata(d => { d.photo = null; })}
                             className="text-red-600 hover:text-red-700 text-sm font-medium flex items-center gap-2"
                         >
@@ -134,15 +138,15 @@ const PhotoUpload = () => {
                         </button>
                     </div>
                 ) : (
-                    <div 
+                    <div
                         onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
                         onDragLeave={() => setIsDragOver(false)}
-                        onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if(e.dataTransfer.files[0]) onSelectFile(e.dataTransfer.files[0]); }}
+                        onDrop={(e) => { e.preventDefault(); setIsDragOver(false); if (e.dataTransfer.files[0]) onSelectFile(e.dataTransfer.files[0]); }}
                         onClick={() => fileInputRef.current?.click()}
                         className={cn(
                             "border-2 border-dashed rounded-xl h-48 flex flex-col items-center justify-center cursor-pointer transition-all",
-                            isDragOver 
-                                ? "border-brand-500 bg-brand-50 dark:bg-brand-900/10" 
+                            isDragOver
+                                ? "border-brand-500 bg-brand-50 dark:bg-brand-900/10"
                                 : "border-slate-300 dark:border-slate-700 hover:border-brand-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                         )}
                     >
@@ -159,9 +163,9 @@ const PhotoUpload = () => {
             {/* Cropping UI */}
             {imgSrc && (
                 <div className="mt-6 bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
-                    <ReactCrop 
-                        crop={crop} 
-                        onChange={(_, pc) => setCrop(pc)} 
+                    <ReactCrop
+                        crop={crop}
+                        onChange={(_, pc) => setCrop(pc)}
                         onComplete={(c) => setCompletedCrop(c)}
                         aspect={biodata.customizations.imageShape === 'circle' ? 1 : undefined}
                         circularCrop={biodata.customizations.imageShape === 'circle'}
@@ -169,15 +173,15 @@ const PhotoUpload = () => {
                     >
                         <img ref={imgRef} src={imgSrc} alt="Crop" />
                     </ReactCrop>
-                    
+
                     <div className="mt-4 flex justify-end gap-3">
-                         <button 
+                        <button
                             onClick={() => setImgSrc('')}
                             className="px-4 py-2 text-slate-600 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
                         >
                             Cancel
                         </button>
-                        <button 
+                        <button
                             onClick={handleSave}
                             disabled={!completedCrop}
                             className="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg shadow-sm shadow-brand-500/30 flex items-center gap-2"
