@@ -85,9 +85,9 @@ MIT
 - Uses open-source libraries for UI, PDF, and icons.
 
 ## Features Waitlist
-- Add color picker in Background page color
-- Add text color option
-- Add font size option
-- Add heador icon options
-- Expand the background theme catalouge
-- Make home page visually richer
+- Add color picker in Background page color --> Done
+- Add text color option --> Done
+- Add font size option --> Done
+- Add heador icon options --> Done
+- Expand the background theme catalouge --> Pending
+- Make home page visually richer --> Pending
