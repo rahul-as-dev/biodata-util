@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useIsDesktop } from '../hooks/useIsDesktop';
 import { useBiodata } from '../contexts/BiodataContext';
 import { useTheme } from '../contexts/ThemeContext';
 import BiodataPreview from '../components/BiodataPreview';
@@ -141,8 +142,11 @@ const CreatePage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
 
+    // Custom Hook for Responsive Logic
+    const isDesktop = useIsDesktop(); // Replaces local state & effect
+
     // Zoom & View State
-    const [zoom, setZoom] = useState(0.65);
+    const [zoom, setZoom] = useState(typeof window !== 'undefined' && window.innerWidth < 768 ? 0.40 : 0.65);
     const [isFullScreen, setIsFullScreen] = useState(false);
 
     // Resizer Logic
@@ -159,17 +163,35 @@ const CreatePage = () => {
     };
 
     const handleMouseDown = (e) => { setIsDragging(true); e.preventDefault(); };
+    const handleTouchStart = (e) => { setIsDragging(true); };
 
     useEffect(() => {
-        const handleMouseMove = (e) => {
+        const handleMove = (clientX) => {
             if (!isDragging || !containerRef.current) return;
             const containerRect = containerRef.current.getBoundingClientRect();
-            const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+            // Calculate percentage based on desktop width only.
+            // On mobile this logic isn't used for layout, but good to have robust.
+            const newWidth = ((clientX - containerRect.left) / containerRect.width) * 100;
             if (newWidth > 30 && newWidth < 70) setLeftWidth(newWidth);
         };
+
+        const handleMouseMove = (e) => handleMove(e.clientX);
+        const handleTouchMove = (e) => handleMove(e.touches[0].clientX);
+
         const handleMouseUp = () => setIsDragging(false);
-        if (isDragging) { document.addEventListener('mousemove', handleMouseMove); document.addEventListener('mouseup', handleMouseUp); }
-        return () => { document.removeEventListener('mousemove', handleMouseMove); document.removeEventListener('mouseup', handleMouseUp); };
+
+        if (isDragging) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.addEventListener('touchmove', handleTouchMove);
+            document.addEventListener('touchend', handleMouseUp);
+        }
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+            document.removeEventListener('touchmove', handleTouchMove);
+            document.removeEventListener('touchend', handleMouseUp);
+        };
     }, [isDragging]);
 
     const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.1, 1.5));
@@ -194,14 +216,15 @@ const CreatePage = () => {
 
     return (
         // REMOVED 'z-0' from here to avoid creating a lower stacking context
-        <div ref={containerRef} className="h-full flex overflow-hidden relative">
+        <div ref={containerRef} className={cn("flex flex-col md:flex-row relative", isDesktop ? "h-full overflow-hidden" : "h-auto min-h-screen overflow-y-auto")}>
 
             {/* --- LEFT PANEL --- */}
             <div
-                style={{ width: isFullScreen ? '0%' : `${leftWidth}%` }}
+                style={{ width: isDesktop ? (isFullScreen ? '0%' : `${leftWidth}%`) : '100%' }}
                 className={cn(
                     "relative flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10",
-                    isFullScreen && "min-w-0 w-0 overflow-hidden border-none"
+                    isFullScreen && "min-w-0 w-0 overflow-hidden border-none",
+                    !isDesktop && "border-b border-slate-200 dark:border-slate-800" // Mobile border fix
                 )}
             >
                 <EditorTheme />
@@ -219,7 +242,7 @@ const CreatePage = () => {
                         <span>Download PDF</span>
                     </button>
                 </div>
-                <div className="relative z-10 flex-1 overflow-y-auto p-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent">
+                <div className={cn("relative z-10 flex-1 p-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent", isDesktop ? "overflow-y-auto" : "overflow-visible h-auto")}>
                     <AnimatePresence mode="wait">
                         {activeTab === 'sections' && (
                             <motion.div key="sections" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
@@ -242,13 +265,17 @@ const CreatePage = () => {
             </div>
 
             {/* --- RESIZER HANDLE --- */}
-            <div onMouseDown={handleMouseDown} className={cn("w-1 cursor-col-resize bg-slate-100 dark:bg-slate-800 hover:bg-rose-400 active:bg-rose-600 transition-colors flex items-center justify-center z-20 relative -ml-[2px]", isDragging && "bg-rose-600 w-1.5", isFullScreen && "hidden")}>
+            <div
+                onMouseDown={handleMouseDown}
+                onTouchStart={handleTouchStart}
+                className={cn("w-1 cursor-col-resize bg-slate-100 dark:bg-slate-800 hover:bg-rose-400 active:bg-rose-600 transition-colors hidden md:flex items-center justify-center z-20 relative -ml-[2px]", isDragging && "bg-rose-600 w-1.5", isFullScreen && "hidden")}
+            >
                 <div className={cn("h-8 w-4 bg-white dark:bg-slate-700 rounded-full shadow-md flex items-center justify-center border border-slate-200 dark:border-slate-600 absolute", isDragging && "border-rose-500")}><GripVertical size={10} className="text-slate-400" /></div>
             </div>
 
             {/* --- RIGHT PANEL --- */}
             <div
-                style={{ width: isFullScreen ? '100%' : `${100 - leftWidth}%` }}
+                style={{ width: isDesktop ? (isFullScreen ? '100%' : `${100 - leftWidth}%`) : '100%' }}
                 className={cn(
                     "relative overflow-hidden flex flex-col transition-all duration-300",
                     // FIX: !fixed and !z-[9999] force it above everything in the entire DOM
@@ -271,9 +298,17 @@ const CreatePage = () => {
                 </div>
 
                 {/* WORKSPACE: Added pt-24 in full screen to push PDF down */}
-                <div className={cn("flex-1 w-full h-full overflow-auto flex items-start justify-center custom-scrollbar z-10 relative", isFullScreen ? "p-12 pt-24" : "p-12")}>
-                    <div style={{ transform: `scale(${zoom})`, transformOrigin: 'top center' }} className="transition-transform duration-200 ease-out will-change-transform mt-4">
-                        <div className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10">
+                <div className={cn("flex-1 w-full h-full flex items-start justify-center custom-scrollbar z-10 relative", isFullScreen ? "p-12 pt-24" : "p-4 md:p-12", isDesktop ? "overflow-auto" : "overflow-visible h-auto")}>
+                    <div
+                        style={{
+                            transform: `scale(${zoom})`,
+                            transformOrigin: 'top left',
+                            height: `calc(297mm * ${zoom})`,
+                            width: `calc(210mm * ${zoom})`
+                        }}
+                        className="transition-transform duration-200 ease-out will-change-transform mt-4"
+                    >
+                        <div className="shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] dark:shadow-[0_35px_60px_-15px_rgba(0,0,0,0.6)] ring-1 ring-black/5 dark:ring-white/10" style={{ width: '210mm', height: '297mm' }}>
                             <BiodataPreview biodata={biodata} />
                         </div>
                     </div>
