@@ -2,26 +2,27 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import { cn } from '../../utils/cn';
 
 const Layout = () => {
   const location = useLocation();
-  const isBuilderPage = location.pathname === '/';
+  const isBuilderPage = location.pathname === '/create';
 
   return (
-    <div className="flex flex-col h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 overflow-hidden font-sans">
+    <div className={cn("flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans",
+      isBuilderPage ? "h-screen overflow-hidden" : "min-h-screen"
+    )}>
       <Navbar />
-      
+
       {/* 
-        If it's the Builder (Home), we want flex-1 and NO overflow-y-auto on the main container 
-        because the builder handles its own internal scrolling panels.
-        
-        If it's About/Contact, we want overflow-y-auto so the page scrolls normally.
+        If it's the Builder, we lock the container so internal panels scroll.
+        For other pages (Home, about, etc), we let the window scroll normally.
       */}
-      <main className={`flex-1 relative ${isBuilderPage ? 'overflow-hidden flex flex-col' : 'overflow-y-auto scrollbar-thin'}`}>
+      <main className={`flex-1 relative ${isBuilderPage ? 'overflow-hidden flex flex-col' : ''}`}>
         <Outlet />
       </main>
 
-      <Footer />
+      {!isBuilderPage && <Footer />}
     </div>
   );
 };

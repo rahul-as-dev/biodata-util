@@ -24,6 +24,10 @@ body {
   @apply bg-slate-50 text-slate-900 transition-colors duration-300;
 }
 
+button, a {
+  cursor: pointer;
+}
+
 /* Dark mode specific overrides using the 'dark' variant */
 :root.dark body {
   @apply bg-slate-950 text-slate-100;

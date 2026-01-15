@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useIsDesktop } from '../hooks/useIsDesktop';
 import { useBiodata } from '../contexts/BiodataContext';
 import { useTheme } from '../contexts/ThemeContext';
@@ -135,6 +136,17 @@ const OverviewEditor = () => {
 const CreatePage = () => {
     const { biodata, updateBiodata, addSection } = useBiodata();
     const { isDark } = useTheme();
+    const [searchParams] = useSearchParams();
+
+    // Handle Layout Selection from URL
+    useEffect(() => {
+        const layoutParam = searchParams.get('layout');
+        if (layoutParam && layoutParam !== biodata.template) {
+            updateBiodata(draft => {
+                draft.template = layoutParam;
+            });
+        }
+    }, [searchParams, updateBiodata, biodata.template]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('sections');
@@ -214,9 +226,18 @@ const CreatePage = () => {
         { id: 'design', label: 'Design', icon: <PaletteIcon size={20} /> },
     ];
 
+    const handleTogglePreview = () => {
+        if (!isDesktop) {
+            setActiveTab(activeTab === 'preview' ? 'sections' : 'preview');
+        } else {
+            setIsFullScreen(!isFullScreen);
+        }
+    };
+
     return (
         // REMOVED 'z-0' from here to avoid creating a lower stacking context
-        <div ref={containerRef} className={cn("flex flex-col md:flex-row relative", isDesktop ? "h-full overflow-hidden" : "h-auto min-h-screen overflow-y-auto")}>
+        // Added pt-20 to account for fixed navbar
+        <div ref={containerRef} className={cn("flex flex-col md:flex-row relative pt-20", isDesktop ? "h-full overflow-hidden" : "h-auto min-h-screen overflow-y-auto")}>
 
             {/* --- LEFT PANEL --- */}
             <div
@@ -224,23 +245,40 @@ const CreatePage = () => {
                 className={cn(
                     "relative flex flex-col bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 ease-in-out shadow-[4px_0_24px_-12px_rgba(0,0,0,0.1)] z-10",
                     isFullScreen && "min-w-0 w-0 overflow-hidden border-none",
-                    !isDesktop && "border-b border-slate-200 dark:border-slate-800" // Mobile border fix
+                    !isDesktop && "border-b border-slate-200 dark:border-slate-800", // Mobile border fix
+                    // Hide Left Panel content if Mobile Preview is active
+                    (!isDesktop && activeTab === 'preview') ? "hidden" : "flex"
                 )}
             >
                 <EditorTheme />
-                <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 p-4 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
-                    <div className="flex px-4 gap-4">
+                <div className="relative z-10 flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/60 py-3 px-4 gap-2 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md shrink-0">
+                    <div className="flex px-1 gap-2 overflow-x-auto scrollbar-hide">
                         {tabs.map(tab => (
-                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("cursor-pointer p-2 text-sm font-medium flex items-center justify-center gap-2 rounded-lg transition-all", activeTab === tab.id ? "text-rose-600 bg-white/80 dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700")} title={tab.label}>{tab.icon} <span className="hidden xl:inline">{tab.label}</span></button>
+                            <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={cn("cursor-pointer p-2 text-sm font-medium flex items-center justify-center gap-2 rounded-lg transition-all shrink-0", activeTab === tab.id ? "text-rose-600 bg-white/80 dark:bg-slate-700 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600" : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-700")} title={tab.label}>{tab.icon} <span className="hidden xl:inline">{tab.label}</span></button>
                         ))}
                     </div>
-                    <button
-                        onClick={handleDownload}
-                        className="cursor-pointer group flex items-center gap-2 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 shadow-md hover:shadow-lg transition-all active:scale-95"
-                    >
-                        <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" />
-                        <span>Download PDF</span>
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                        {/* Preview Button (Mobile Only) */}
+                        {!isDesktop && activeTab !== 'preview' && (
+                            <button
+                                onClick={() => setActiveTab('preview')}
+                                className="cursor-pointer flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider text-rose-600 bg-rose-50 border border-rose-200 shadow-sm active:scale-95 transition-all"
+                            >
+                                <Eye size={16} />
+                                <span>Preview</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={handleDownload}
+                            className="cursor-pointer group flex items-center gap-2 px-3 sm:px-5 py-2 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-700 hover:to-amber-700 shadow-md hover:shadow-lg transition-all active:scale-95"
+                        >
+                            <Download size={18} className="group-hover:-translate-y-0.5 transition-transform" />
+                            <span className="hidden sm:inline">Download PDF</span>
+                            <span className="sm:hidden">PDF</span>
+                        </button>
+                    </div>
                 </div>
                 <div className={cn("relative z-10 flex-1 p-4 scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700 scrollbar-track-transparent", isDesktop ? "overflow-y-auto" : "overflow-visible h-auto")}>
                     <AnimatePresence mode="wait">
@@ -280,20 +318,26 @@ const CreatePage = () => {
                     "relative overflow-hidden flex flex-col transition-all duration-300",
                     // FIX: !fixed and !z-[9999] force it above everything in the entire DOM
                     // Added bg-slate-900 to ensure opacity doesn't show background nav
-                    isFullScreen ? "!fixed !inset-0 !z-[9999] h-screen w-screen bg-slate-900" : "relative"
+                    isFullScreen ? "!fixed !inset-0 !z-[9999] h-screen w-screen bg-slate-900" : "relative",
+                    // Mobile Visibility Logic: Only show when 'preview' tab is active
+                    (!isDesktop && activeTab !== 'preview') ? "hidden" : "flex",
+                    // Ensure it takes full height on mobile when active
+                    (!isDesktop && activeTab === 'preview') && "h-[calc(100vh-80px)]"
                 )}
             >
                 <PreviewTheme />
 
                 {/* EXIT BUTTON: Z-Index higher than container */}
                 <div className="absolute top-6 right-6 z-[10000]">
-                    <button onClick={toggleFullScreen} className={cn("flex items-center gap-2.5 px-4 py-2 rounded-full border shadow-lg transition-all duration-300 group backdrop-blur-md cursor-pointer", "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 hover:border-rose-200")}>
+                    <button onClick={handleTogglePreview} className={cn("flex items-center gap-2.5 px-4 py-2 rounded-full border shadow-lg transition-all duration-300 group backdrop-blur-md cursor-pointer", "bg-white/90 dark:bg-slate-800/90 border-slate-200 dark:border-slate-700 hover:bg-rose-50 dark:hover:bg-slate-700 hover:border-rose-200")}>
                         <span className="relative flex h-2 w-2">
                             <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-green-500")}></span>
                             <span className={cn("relative inline-flex rounded-full h-2 w-2 bg-green-500")}></span>
                         </span>
-                        <span className={cn("text-xs font-bold tracking-wide select-none text-slate-600 dark:text-slate-300")}>{isFullScreen ? 'EXIT FULL SCREEN' : 'LIVE PREVIEW'}</span>
-                        {isFullScreen ? <Minimize2 size={16} className="ml-1" /> : <Maximize2 size={16} className="ml-1" />}
+                        <span className={cn("text-xs font-bold tracking-wide select-none text-slate-600 dark:text-slate-300 uppercase")}>
+                            {(!isDesktop && activeTab === 'preview') ? 'Exit Preview' : (isFullScreen ? 'Exit Full Screen' : 'Live Preview')}
+                        </span>
+                        {(!isDesktop || isFullScreen) ? <Minimize2 size={16} className="ml-1" /> : <Maximize2 size={16} className="ml-1" />}
                     </button>
                 </div>
 
