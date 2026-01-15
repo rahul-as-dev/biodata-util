@@ -145,7 +145,7 @@ const Sidebar = () => {
                 {/* Scrollable Container */}
                 <div className="max-h-40 overflow-y-auto pr-1 -mr-2 custom-scrollbar">
                     {/* Compact Grid */}
-                    <div className="grid grid-cols-6 gap-4">
+                    <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 xl:grid-cols-5 gap-3">
                         {HEADER_ICONS.map(({ Icon, text, svgPath }, index) => {
                             const isActive = biodata.header.icon === Icon;
 
@@ -170,7 +170,7 @@ const Sidebar = () => {
                                     {/* Icon */}
                                     {Icon && <Icon
                                         className={cn(
-                                            "w-22 h-22 transition-colors",
+                                            "w-16 h-16 md:w-20 md:h-20 transition-colors",
                                             isActive
                                                 ? "text-brand-600 dark:text-brand-400"
                                                 : "text-slate-500 dark:text-slate-400"
