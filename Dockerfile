@@ -1,43 +1,48 @@
-# --- Build stage ---
-FROM node:18-alpine AS builder
+# --- Build Stage ---
+# Use Node 24 Slim (Debian-based) to ensure Tailwind 4 & React-PDF binaries work
+FROM node:24-bookworm-slim AS builder
 
-# Install pnpm
-RUN npm install -g pnpm
+# Enable pnpm using Corepack (Node's built-in package manager manager)
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
 
 WORKDIR /app
 
-# Copy dependency files
+# Copy dependency files first (better caching)
 COPY package.json pnpm-lock.yaml ./
 
-# Install dependencies using pnpm
+# Install dependencies
+# --frozen-lockfile: ensures we use exact versions from lockfile
 RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copy the rest of the source code
 COPY . .
 
-# Build React app
-# Vite typically outputs to "dist"
+# Build the app
+# Increased memory limit to prevent Vite/Tailwind crashing
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm run build
 
-# --- Serve stage ---
-FROM node:18-alpine
+# --- Serve Stage ---
+# We use the same Slim base for runtime to avoid "missing shared library" errors
+FROM node:24-bookworm-slim
+
 WORKDIR /app
 
-# Install lightweight static server
-# We can stick with standard npm for this global tool, or use pnpm. It doesn't matter much for runtime.
-# But since we are just running a binary, npm run is fine.
+# Install 'serve' globally to host the static files
+# We use npm here because it's simple for a global tool and avoids setting up pnpm again
 RUN npm install -g serve
 
-# Copy build output from previous stage
-# CHANGE: "build" -> "dist" (Vite default)
+# Copy only the build artifacts from the builder stage
 COPY --from=builder /app/dist ./build
 
-# Cloud Run expects the app to listen on $PORT
+# Set environment variables
 ENV PORT=8080
+ENV NODE_ENV=production
 
-# Expose for local debugging (optional)
+# Expose the port
 EXPOSE 8080
 
-# Use serve to serve the static files
-# serve -s build (because we copied dist INTO a folder named build on line 32)
+# Start the server
 CMD ["serve", "-s", "build", "-l", "8080"]
