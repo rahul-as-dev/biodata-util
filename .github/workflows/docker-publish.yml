@@ -11,6 +11,8 @@ env:
   AR_REPO_NAME: biodata-repo
   SERVICE_NAME: best-biodata-maker
   IMAGE_NAME: best-marriage-biodata-maker
+  # FIX: Map the secret to an ENV var so it can be safely checked in 'if' conditions
+  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
 
 jobs:
   build-deploy:
@@ -31,14 +33,16 @@ jobs:
 
       # 2. Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        # FIX: Check the env var instead of the secret object directly
+        if: env.GCP_SA_KEY != ''
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       # 3. Configure Docker for Artifact Registry
       - name: Configure Docker Auth (GCP)
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        # FIX: Check the env var
+        if: env.GCP_SA_KEY != ''
         run: |
           gcloud auth configure-docker ${{ env.GCP_REGION }}-docker.pkg.dev --quiet
 
@@ -56,22 +60,27 @@ jobs:
         with:
           context: .
           push: true
+          # Push to BOTH Artifact Registry (Primary) and GHCR (Backup)
           tags: |
             ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:latest
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
             ghcr.io/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:latest
+          # Use GitHub Actions Cache for speed
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       # 6. Deploy to Cloud Run
       - name: Deploy to Cloud Run
-        if: ${{ secrets.GCP_SA_KEY != '' }}
+        # FIX: Check the env var and removed syntax errors
+        if: env.GCP_SA_KEY != ''
         uses: google-github-actions/deploy-cloudrun@v1
         with:
           service: ${{ env.SERVICE_NAME }}
           region: ${{ env.GCP_REGION }}
+          # Deploy the specific SHA tag we just built
           image: ${{ env.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.AR_REPO_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # The flag belongs here
           flags: '--allow-unauthenticated'
 
       - name: Summary
