@@ -1,0 +1,19 @@
+{
+  "hosting": {
+    "public": "public-lite",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "run": {
+          "serviceId": "best-biodata-maker",
+          "region": "asia-south1"
+        }
+      }
+    ]
+  }
+}
