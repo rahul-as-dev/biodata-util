@@ -7,11 +7,11 @@ const ClassicRenderer = ({ biodata, styles, themeConfig }) => {
     const enabledSections = sections.filter(s => s.enabled);
 
     return (
-        <div className="relative z-10 h-full flex flex-col overflow-hidden" style={{ padding: '3em 6em', paddingLeft: themeConfig.styles.paddingLeft, paddingRight: themeConfig.styles.paddingRight, color: styles.textColor, fontSize: styles.fontSize }}>
+        <div className="relative z-10 h-full flex flex-col" style={{ paddingTop: themeConfig.styles.paddingTop || '3em', paddingBottom: themeConfig.styles.paddingBottom || '3em', paddingLeft: themeConfig.styles.paddingLeft || '6em', paddingRight: themeConfig.styles.paddingRight || '6em', color: styles.textColor, fontSize: styles.fontSize }}>
             {header.enabled && (
                 <div className="text-center mb-[2em] pb-[0.5em] border-b-[0.15em]" style={{ borderColor: `${styles.primaryColor}` }}>
                     {header.icon && <header.icon className="h-[6em] w-[6em] mx-auto -mt-[3em] -mb-[0.2em]" style={{ color: styles.primaryColor }} />}
-                    <h1 className="text-[1.8em] font-bold uppercase tracking-wider" style={{ color: styles.primaryColor }}>{header.text}</h1>
+                    <h1 className="text-[1.8em] font-bold uppercase" style={{ color: styles.primaryColor }}>{header.text}</h1>
                 </div>
             )}
             {photo && customizations.imagePlacement === 'above' && (

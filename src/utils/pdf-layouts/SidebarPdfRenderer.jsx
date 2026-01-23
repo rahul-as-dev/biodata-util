@@ -18,7 +18,7 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
     const mainSections = enabledSections.filter(s => !sidebarSectionIds.includes(s.id));
 
     const backgroundColor = customizations?.backgroundColor || '#ffffff';
-    const scale = 0.85;
+    const scale = 0.95;
     const photoSize = 85 * scale;
 
     const pdfStyles = StyleSheet.create({
@@ -27,14 +27,18 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
             fontSize: styles.fontSize * scale,
             color: styles.textColor,
             backgroundColor: backgroundColor,
-            lineHeight: 1.4,
+            // lineHeight: 1.4,
             position: 'relative',
             flexDirection: isRight ? 'row-reverse' : 'row',
         },
-        backgroundImage: {
+        backgroundLayer: {
             position: 'absolute',
             top: 0,
             left: 0,
+            width: '100%',
+            height: '100%',
+        },
+        backgroundImage: {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
@@ -147,7 +151,9 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
         <Page size="A4" style={pdfStyles.page}>
             {/* Background */}
             {biodata.processedBg && (
-                <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} fixed />
+                <View style={pdfStyles.backgroundLayer} fixed>
+                    <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} />
+                </View>
             )}
 
             {/* Sidebar */}

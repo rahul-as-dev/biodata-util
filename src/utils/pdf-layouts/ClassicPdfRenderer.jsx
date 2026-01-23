@@ -15,7 +15,7 @@ const ClassicPdfRenderer = ({ biodata }) => {
     const backgroundColor = customizations?.backgroundColor || '#ffffff';
 
     // Scale factor to make PDF content more compact (matching preview proportions)
-    const scale = 0.85;
+    const scale = 0.95;
     const photoSize = 90 * scale;
 
     const pdfStyles = StyleSheet.create({
@@ -24,14 +24,21 @@ const ClassicPdfRenderer = ({ biodata }) => {
             fontSize: styles.fontSize * scale,
             color: styles.textColor,
             backgroundColor: backgroundColor,
-            lineHeight: 1.4,
-            padding: '30 50',
+            // lineHeight: 1.4,
             position: 'relative',
         },
-        backgroundImage: {
+        contentContainer: {
+            padding: '30 50',
+            flex: 1,
+        },
+        backgroundLayer: {
             position: 'absolute',
             top: 0,
             left: 0,
+            width: '100%',
+            height: '100%',
+        },
+        backgroundImage: {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
@@ -48,7 +55,6 @@ const ClassicPdfRenderer = ({ biodata }) => {
             fontSize: 16 * scale,
             color: styles.primaryColor,
             textTransform: 'uppercase',
-            letterSpacing: 1.5,
         },
         personalContainer: {
             flexDirection: 'row',
@@ -96,7 +102,7 @@ const ClassicPdfRenderer = ({ biodata }) => {
             textTransform: 'uppercase',
             letterSpacing: 0.3,
             color: styles.textColor,
-            opacity: 0.7,
+            opacity: 0.8,
         },
         fieldValue: {
             width: '67%',
@@ -107,89 +113,94 @@ const ClassicPdfRenderer = ({ biodata }) => {
 
     return (
         <Page size="A4" style={pdfStyles.page}>
-            {/* Background - fixed to repeat on all pages */}
+            {/* Background - fixed View wrapper ensures proper full-page coverage */}
             {biodata.processedBg && (
-                <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} fixed />
+                <View style={pdfStyles.backgroundLayer} fixed>
+                    <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} />
+                </View>
             )}
 
-            {/* Header with Icon */}
-            {header.enabled && (
-                <View style={pdfStyles.headerContainer}>
-                    {biodata.processedHeaderIcon && (
-                        <Image
-                            src={biodata.processedHeaderIcon}
-                            style={{ width: 50 * scale, height: 50 * scale, marginBottom: 6, marginTop: -25 * scale, objectFit: 'contain' }}
+            {/* Content Container with Padding */}
+            <View style={pdfStyles.contentContainer}>
+                {/* Header with Icon */}
+                {header.enabled && (
+                    <View style={pdfStyles.headerContainer}>
+                        {biodata.processedHeaderIcon && (
+                            <Image
+                                src={biodata.processedHeaderIcon}
+                                style={{ width: 50 * scale, height: 50 * scale, marginBottom: 6, marginTop: -25 * scale, objectFit: 'contain' }}
+                            />
+                        )}
+                        <Text style={pdfStyles.headerText}>{header.text}</Text>
+                    </View>
+                )}
+
+                {/* Photo Above (if configured) */}
+                {photo && customizations?.imagePlacement === 'above' && (
+                    <View style={{ alignItems: 'center', marginBottom: 8 * scale, marginTop: -10 * scale }}>
+                        <PdfPhoto
+                            src={photo}
+                            styles={styles}
+                            size={photoSize}
+                            shape={customizations.imageShape}
+                            borderWidth={3}
                         />
-                    )}
-                    <Text style={pdfStyles.headerText}>{header.text}</Text>
-                </View>
-            )}
+                    </View>
+                )}
 
-            {/* Photo Above (if configured) */}
-            {photo && customizations?.imagePlacement === 'above' && (
-                <View style={{ alignItems: 'center', marginBottom: 8 * scale, marginTop: -10 * scale }}>
-                    <PdfPhoto
-                        src={photo}
-                        styles={styles}
-                        size={photoSize}
-                        shape={customizations.imageShape}
-                        borderWidth={3}
-                    />
-                </View>
-            )}
+                {/* Overview */}
+                {overview?.enabled && overview.text && (
+                    <Text style={pdfStyles.overviewText}>{overview.text}</Text>
+                )}
 
-            {/* Overview */}
-            {overview?.enabled && overview.text && (
-                <Text style={pdfStyles.overviewText}>{overview.text}</Text>
-            )}
+                {/* All Sections including Personal */}
+                {enabledSections.map((section) => {
+                    // For personal section with photo on right
+                    if (section.id === 'personal' && photo && customizations?.imagePlacement === 'right') {
+                        return (
+                            <View key={section.id} style={pdfStyles.sectionContainer} wrap={false}>
+                                <View style={pdfStyles.sectionTitleWrapper}>
+                                    <Text style={pdfStyles.sectionTitle}>{section.title}</Text>
+                                </View>
+                                <View style={{ flexDirection: 'row', gap: 15 }}>
+                                    <View style={{ flex: 1 }}>
+                                        {section.fields.filter(f => f.enabled).map(f => (
+                                            <View key={f.id} style={pdfStyles.fieldRow}>
+                                                <Text style={pdfStyles.fieldLabel}>{f.showLabel !== false ? f.label : ''}</Text>
+                                                <Text style={pdfStyles.fieldValue}>{f.value}</Text>
+                                            </View>
+                                        ))}
+                                    </View>
+                                    <PdfPhoto
+                                        src={photo}
+                                        styles={styles}
+                                        size={photoSize}
+                                        shape={customizations.imageShape}
+                                        borderWidth={3}
+                                    />
+                                </View>
+                            </View>
+                        );
+                    }
 
-            {/* All Sections including Personal */}
-            {enabledSections.map((section) => {
-                // For personal section with photo on right
-                if (section.id === 'personal' && photo && customizations?.imagePlacement === 'right') {
+                    // Regular section
                     return (
                         <View key={section.id} style={pdfStyles.sectionContainer} wrap={false}>
                             <View style={pdfStyles.sectionTitleWrapper}>
                                 <Text style={pdfStyles.sectionTitle}>{section.title}</Text>
                             </View>
-                            <View style={{ flexDirection: 'row', gap: 15 }}>
-                                <View style={{ flex: 1 }}>
-                                    {section.fields.filter(f => f.enabled).map(f => (
-                                        <View key={f.id} style={pdfStyles.fieldRow}>
-                                            <Text style={pdfStyles.fieldLabel}>{f.showLabel !== false ? f.label : ''}</Text>
-                                            <Text style={pdfStyles.fieldValue}>{f.value}</Text>
-                                        </View>
-                                    ))}
-                                </View>
-                                <PdfPhoto
-                                    src={photo}
-                                    styles={styles}
-                                    size={photoSize}
-                                    shape={customizations.imageShape}
-                                    borderWidth={3}
-                                />
+                            <View style={pdfStyles.fieldsContainer}>
+                                {section.fields.filter(f => f.enabled).map(f => (
+                                    <View key={f.id} style={pdfStyles.fieldRow}>
+                                        <Text style={pdfStyles.fieldLabel}>{f.showLabel !== false ? f.label : ''}</Text>
+                                        <Text style={pdfStyles.fieldValue}>{f.value}</Text>
+                                    </View>
+                                ))}
                             </View>
                         </View>
                     );
-                }
-
-                // Regular section
-                return (
-                    <View key={section.id} style={pdfStyles.sectionContainer} wrap={false}>
-                        <View style={pdfStyles.sectionTitleWrapper}>
-                            <Text style={pdfStyles.sectionTitle}>{section.title}</Text>
-                        </View>
-                        <View style={pdfStyles.fieldsContainer}>
-                            {section.fields.filter(f => f.enabled).map(f => (
-                                <View key={f.id} style={pdfStyles.fieldRow}>
-                                    <Text style={pdfStyles.fieldLabel}>{f.showLabel !== false ? f.label : ''}</Text>
-                                    <Text style={pdfStyles.fieldValue}>{f.value}</Text>
-                                </View>
-                            ))}
-                        </View>
-                    </View>
-                );
-            })}
+                })}
+            </View>
         </Page>
     );
 };

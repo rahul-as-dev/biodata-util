@@ -97,37 +97,37 @@ export const HEADER_ICONS = [
     },
     {
         Icon: SimpleOm1Component,
-        text: '|| ॐ नमो नारायणाय ||',
+        text: 'ॐ नमो नारायणाय',
         svgPath: '/src/assets/svg-assets/SimpleOm1.svg',
     },
     {
         Icon: OmIcon1Component,
-        text: '|| मंगलम् ||',
+        text: 'ॐ मंगलम्',
         svgPath: null, // Inline SVG in SVGAssets.jsx, handled separately
     },
     {
         Icon: OmIcon2Component,
-        text: '|| शुभे शोभन मंगलम् ||',
+        text: 'शुभे शोभन मंगलम्',
         svgPath: '/src/assets/svg-assets/OmIcon2.svg',
     },
     {
         Icon: GaneshaSimple1Component,
-        text: '|| ॐ श्री गणेशाय नमः ||',
+        text: 'ॐ श्री गणेशाय नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha1.svg',
     },
     {
         Icon: GaneshaSimple2Component,
-        text: '|| ॐ गं गणपतये नमः ||',
+        text: 'ॐ गं गणपतये नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha2.svg',
     },
     {
         Icon: GaneshaSimple3Component,
-        text: '|| श्री गणेशाय नमः ||',
+        text: 'श्री गणेशाय नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha3.svg',
     },
     {
         Icon: Swastika1Component,
-        text: '|| शुभ लाभ ||',
+        text: 'शुभ लाभ',
         svgPath: '/src/assets/svg-assets/Swastika1.svg',
     }
 ]

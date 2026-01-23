@@ -28,8 +28,8 @@ import Minimize2 from 'lucide-react/dist/esm/icons/minimize-2';
 import Maximize2 from 'lucide-react/dist/esm/icons/maximize-2';
 import Download from 'lucide-react/dist/esm/icons/download';
 import { motion, AnimatePresence } from 'framer-motion';
-import { EnchantedFireflies as PreviewTheme } from '../assets/background-theme/EnchantedFireflies';
-import { DottedEditorTheme as EditorTheme } from '../assets/background-theme/DottedEditorTheme';
+import { MacroDotBackground as PreviewTheme } from '../assets/background-theme/MacroDotBackground';
+import { SoftGridBackground as EditorTheme } from '../assets/background-theme/SoftGridBackground';
 
 // --- FieldEditor ---
 const FieldEditor = ({ sectionId, field }) => {
@@ -146,7 +146,7 @@ const CreatePage = () => {
                 draft.template = layoutParam;
             });
         }
-    }, [searchParams, updateBiodata, biodata.template]);
+    }, [searchParams, updateBiodata]);
 
     // UI State
     const [activeTab, setActiveTab] = useState('sections');

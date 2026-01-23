@@ -12,7 +12,7 @@ const SwissCleanPdfRenderer = ({ biodata }) => {
     const styles = createBaseStyles(customizations);
     const enabledSections = sections.filter(s => s.enabled);
     const backgroundColor = customizations?.backgroundColor || '#ffffff';
-    const scale = 0.85;
+    const scale = 0.95;
 
     const pdfStyles = StyleSheet.create({
         page: {
@@ -20,14 +20,18 @@ const SwissCleanPdfRenderer = ({ biodata }) => {
             fontSize: styles.fontSize * scale,
             color: styles.textColor,
             backgroundColor: backgroundColor,
-            lineHeight: 1.4,
+            // lineHeight: 1.4,
             padding: '40 50',
             position: 'relative',
         },
-        backgroundImage: {
+        backgroundLayer: {
             position: 'absolute',
             top: 0,
             left: 0,
+            width: '100%',
+            height: '100%',
+        },
+        backgroundImage: {
             width: '100%',
             height: '100%',
             objectFit: 'cover',
@@ -113,7 +117,9 @@ const SwissCleanPdfRenderer = ({ biodata }) => {
     return (
         <Page size="A4" style={pdfStyles.page}>
             {biodata.processedBg && (
-                <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} fixed />
+                <View style={pdfStyles.backgroundLayer} fixed>
+                    <Image src={biodata.processedBg} style={pdfStyles.backgroundImage} />
+                </View>
             )}
 
             {/* Header Area */}
