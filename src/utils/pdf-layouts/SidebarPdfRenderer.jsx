@@ -46,11 +46,11 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
         // Sidebar (32% width)
         sidebar: {
             width: '32%',
-            padding: 20,
-            backgroundColor: `${styles.primaryColor}08`,
+            padding: 30,
+            backgroundColor: `${styles.backgroundColor}80`,
             borderRightWidth: isRight ? 0 : 1,
             borderLeftWidth: isRight ? 1 : 0,
-            borderColor: `${styles.primaryColor}20`,
+            borderColor: `${styles.primaryColor}`,
             gap: 15,
         },
         // Main content area (68% width)
@@ -99,7 +99,7 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
             fontWeight: 'bold',
             color: styles.primaryColor,
             textTransform: 'uppercase',
-            letterSpacing: 1.5,
+            letterSpacing: 1.2,
         },
         // Section styling
         sectionContainer: {
@@ -113,12 +113,14 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
             letterSpacing: 1.5,
             paddingBottom: 2,
             borderBottomWidth: 1.5,
-            borderBottomColor: `${styles.primaryColor}70`,
+            borderBottomColor: `${styles.primaryColor}`,
             marginBottom: 5,
+            alignSelf: 'flex-start',
         },
         fieldRow: {
             flexDirection: 'row',
             marginBottom: 2 * scale,
+            lineHeight: 1.2,
         },
         fieldLabel: {
             width: '35%',
@@ -132,6 +134,12 @@ const SidebarPdfRenderer = ({ biodata, isRight = false }) => {
             width: '65%',
             fontSize: styles.fontSize * scale,
             color: styles.textColor,
+        },
+        photo: {
+            borderWidth: 4,
+            borderColor: styles.primaryColor,
+            borderRadius: 95 * scale, // Circle
+            marginBottom: 20 * scale,
         },
     });
 

@@ -22,19 +22,6 @@ export const SoftGridBackground = React.memo(() => (
       }}
     />
 
-    {/* Diagonal line texture (adds contrast without noise) */}
-    <div
-      className="
-        absolute inset-0
-        opacity-[0.15]
-        dark:opacity-[0.25]
-      "
-      style={{
-        backgroundImage:
-          "repeating-linear-gradient(135deg, var(--grid-line) 0 1px, transparent 1px 18px)",
-      }}
-    />
-
     {/* Vignette for edge contrast */}
     <div
       className="absolute inset-0"

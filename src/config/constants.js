@@ -91,41 +91,49 @@ export const textColorsDark = [
 
 export const HEADER_ICONS = [
     {
+        id: 'none',
         Icon: undefined,
         text: '',
         svgPath: null,
     },
     {
+        id: 'simple-om-1',
         Icon: SimpleOm1Component,
         text: 'ॐ नमो नारायणाय',
         svgPath: '/src/assets/svg-assets/SimpleOm1.svg',
     },
     {
+        id: 'om-1',
         Icon: OmIcon1Component,
         text: 'ॐ मंगलम्',
         svgPath: null, // Inline SVG in SVGAssets.jsx, handled separately
     },
     {
+        id: 'om-2',
         Icon: OmIcon2Component,
         text: 'शुभे शोभन मंगलम्',
         svgPath: '/src/assets/svg-assets/OmIcon2.svg',
     },
     {
+        id: 'ganesha-1',
         Icon: GaneshaSimple1Component,
         text: 'ॐ श्री गणेशाय नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha1.svg',
     },
     {
+        id: 'ganesha-2',
         Icon: GaneshaSimple2Component,
         text: 'ॐ गं गणपतये नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha2.svg',
     },
     {
+        id: 'ganesha-3',
         Icon: GaneshaSimple3Component,
         text: 'श्री गणेशाय नमः',
         svgPath: '/src/assets/svg-assets/SimpleGanesha3.svg',
     },
     {
+        id: 'swastika-1',
         Icon: Swastika1Component,
         text: 'शुभ लाभ',
         svgPath: '/src/assets/svg-assets/Swastika1.svg',

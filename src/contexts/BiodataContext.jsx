@@ -8,7 +8,7 @@ const STORAGE_KEY = 'vivahpatra_biodata';
 
 const initialBiodataState = {
     header: {
-        icon: undefined, 
+        icon: undefined,
         text: '',
         enabled: true,
     },
@@ -16,7 +16,7 @@ const initialBiodataState = {
         enabled: true,
         text: 'Believing in family values and modern thinking. Looking for a partner who is understanding and caring.'
     },
-    photo: null, 
+    photo: null,
     sections: [
         {
             id: 'personal',
@@ -86,9 +86,10 @@ export const BiodataProvider = ({ children }) => {
                     const parsedData = JSON.parse(savedData);
                     // Merge with initial state to ensure new structure changes don't break old saves
                     // Note: We prefer saved data, but fallback to initial for deep properties if missing
-                    return { ...initialBiodataState, ...parsedData, 
+                    return {
+                        ...initialBiodataState, ...parsedData,
                         // Ensure customizations object exists even if old save didn't have it
-                        customizations: { ...initialBiodataState.customizations, ...parsedData.customizations } 
+                        customizations: { ...initialBiodataState.customizations, ...parsedData.customizations }
                     };
                 }
             } catch (error) {
@@ -110,9 +111,9 @@ export const BiodataProvider = ({ children }) => {
         }
     }, [biodata]);
 
-    const updateBiodata = (updater) => {
+    const updateBiodata = React.useCallback((updater) => {
         setBiodata(prev => produce(prev, updater));
-    };
+    }, []);
 
     // --- Actions ---
     const addSection = (title) => {

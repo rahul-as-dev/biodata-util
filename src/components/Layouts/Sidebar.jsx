@@ -146,15 +146,15 @@ const Sidebar = () => {
                 <div className="max-h-40 overflow-y-auto pr-1 -mr-2 custom-scrollbar">
                     {/* Compact Grid */}
                     <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 xl:grid-cols-5 gap-3">
-                        {HEADER_ICONS.map(({ Icon, text, svgPath }, index) => {
-                            const isActive = biodata.header.icon === Icon;
+                        {HEADER_ICONS.map(({ id, Icon, text, svgPath }, index) => {
+                            const isActive = biodata.header.iconId === id;
 
                             return (
                                 <button
                                     key={index}
                                     onClick={() =>
                                         updateBiodata(d => {
-                                            d.header.icon = Icon;
+                                            d.header.iconId = id;
                                             d.header.text = text;
                                             d.header.svgPath = svgPath;
                                             d.header.enabled = true;

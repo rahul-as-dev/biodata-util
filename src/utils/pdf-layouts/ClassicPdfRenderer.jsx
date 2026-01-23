@@ -75,6 +75,7 @@ const ClassicPdfRenderer = ({ biodata }) => {
         sectionTitleWrapper: {
             marginBottom: 4 * scale,
             textAlign: 'left',
+            alignItems: 'flex-start',
         },
         sectionTitle: {
             fontSize: styles.fontSize * 1.1 * scale,
@@ -85,6 +86,7 @@ const ClassicPdfRenderer = ({ biodata }) => {
             paddingBottom: 2,
             borderBottomWidth: 1.5,
             borderBottomColor: `${styles.primaryColor}70`,
+            alignSelf: 'flex-start',
         },
         fieldsContainer: {
             flexDirection: 'column',

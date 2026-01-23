@@ -1,7 +1,8 @@
 // src/utils/themeRegistry.js
 
 // Import your background assets here
-import floralRedBg from '../assets/document-bg/floral-red.png'; 
+import floralRedBg from '../assets/document-bg/floral-red.png';
+import Temp from '../assets/document-bg/rect21.jpg';
 
 export const THEMES = {
     'minimal': {
@@ -29,6 +30,20 @@ export const THEMES = {
             paddingTop: 65,    
             paddingBottom: 65,
             paddingLeft: 130,
+            paddingRight: 100
+        }
+    },
+    'temp': {
+        id: 'temp',
+        name: 'Temp',
+        asset: Temp, // Using the imported image
+        styles: {
+            primaryColor: '#991b1b',
+            fontFamily: 'serif',
+            // HIGHER PADDING to push text inside the theme
+            paddingTop: 65,    
+            paddingBottom: 65,
+            paddingLeft: 160,
             paddingRight: 100
         }
     },

@@ -7,8 +7,9 @@ import { View, Text, Image, StyleSheet } from '@react-pdf/renderer';
  */
 export const createBaseStyles = (customizations = {}) => {
     const textColor = customizations.textColor || '#334155';
-    const primaryColor = customizations.primaryColor || '#e11d48';
+    const primaryColor = customizations.primaryColor || '#ffffff';
     const fontSize = parseFloat(customizations.fontSize) || 10;
+    const backgroundColor = customizations.backgroundColor || '#ffffff';
 
     // Map font family to PDF-compatible fonts
     let fontFamily = 'Helvetica';
@@ -21,6 +22,7 @@ export const createBaseStyles = (customizations = {}) => {
         fontSize,
         fontFamily,
         hindiFont: 'NotoSansDevanagari',
+        backgroundColor,
     };
 };
 

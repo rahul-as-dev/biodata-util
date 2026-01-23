@@ -11,7 +11,7 @@ const SidebarRenderer = ({ biodata, styles, themeConfig, isRight = false }) => {
 
     return (
         <div className={cn("relative z-10 h-full flex", isRight ? "flex-row-reverse pl-16 pr-8" : "flex-row pr-2")} style={{ color: styles.textColor, fontSize: styles.fontSize }}>
-            <div className="flex flex-col border-r" style={{ width: '32%', padding: '2em', gap: '1.5em', backgroundColor: `${styles.primaryColor}08`, borderColor: `${styles.primaryColor}20` }}>
+            <div className="flex flex-col border-r p-10" style={{ width: '32%', gap: '1.5em', backgroundColor: `${styles.primaryColor}08`, borderColor: `${styles.primaryColor}80` }}>
                 {photo && (
                     <div className="flex justify-center" style={{ marginBottom: '0.5em' }}>
                         <img src={photo} className="object-cover shadow-md" style={{ width: '10em', height: '10em', borderColor: styles.primaryColor, borderWidth: '0.25em', borderRadius: customizations.imageShape === 'circle' ? '50%' : '0.4em' }} alt="Profile" />
